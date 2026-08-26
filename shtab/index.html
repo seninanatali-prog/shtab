@@ -1,531 +1,363 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ШТАБ — стройка под контролем дизайнера</title>
-<meta name="description" content="ШТАБ помогает собирать дизайнеру систему самоконтроля на стройке: план этапов с приёмками, график закупок и Excel таблицу с графиком работ для контроля строительных бригад и подрядчиков.">
-<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23F4EFE7"/><rect x="6" y="9" width="20" height="2" fill="%23282320"/><rect x="6" y="15" width="14" height="2" fill="%23282320"/><rect x="6" y="21" width="20" height="2" fill="%23282320"/></svg>'>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ШТАБ НАДЗОР — стройка под контролем дизайнера</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{
-  --cream:#F4EFE7; --paper:#FBF8F2; --greige:#E6DDCE; --taupe:#A2937F;
-  --ink:#282320; --ink2:#6B6156;
-  --line:rgba(40,35,32,.15); --line2:rgba(40,35,32,.45);
-  --acc:#A85B2B; --acc-d:#8A4A21;
-  --ok:#66715B; --bad:#A94434; --warn:#96762A; --brz:#8A6B3D; --green:#2F7D46;
-  --df:'Cormorant Garamond',serif; --bf:'Manrope',sans-serif; --mf:'JetBrains Mono',monospace;
-  --ease:cubic-bezier(.22,.61,.16,1);
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{background:var(--cream);color:var(--ink);font-family:var(--bf);line-height:1.65;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
-  background-image:linear-gradient(rgba(162,147,127,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(162,147,127,.12) 1px,transparent 1px);
-  background-size:44px 44px}
-img{max-width:100%;display:block;background:var(--greige)}
-a{color:inherit}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-::selection{background:var(--acc);color:#fff}
-:focus-visible{outline:2px dashed var(--acc);outline-offset:3px}
-.wrap{max-width:1200px;margin:0 auto;padding-inline:clamp(18px,4vw,44px);position:relative;z-index:1}
-.mono{font-family:var(--mf)}
-.kick{font-family:var(--mf);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--acc)}
-h1,h2,h3{font-family:var(--df);font-weight:600;line-height:1.08;letter-spacing:.005em}
-h2 em{font-style:italic;color:var(--acc);font-weight:500}
-[data-reveal]{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease) var(--d,0s),transform .8s var(--ease) var(--d,0s)}
-[data-reveal].in{opacity:1;transform:none}
-.lm .lm-l{display:block;overflow:hidden}
-.lm .lm-l>span{display:block;transform:translateY(112%);transition:transform .9s var(--ease) var(--d,0s)}
-.lm.in .lm-l>span{transform:none}
-.btn{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:var(--cream);padding:15px 28px;font-weight:700;font-size:14px;letter-spacing:.03em;border:1px solid var(--ink);transition:.28s var(--ease)}
-.btn:hover{background:var(--acc);border-color:var(--acc);transform:translateY(-2px)}
-.btn .arr{transition:transform .3s}
-.btn:hover .arr{transform:translateX(5px)}
-/* шапка */
-header{position:sticky;top:0;z-index:50;background:rgba(244,239,231,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-header .wrap{display:flex;align-items:center;justify-content:space-between;height:66px}
-.logo{font-family:var(--df);font-weight:600;font-size:24px;text-decoration:none;color:var(--ink);letter-spacing:.02em}
-nav{display:flex;gap:26px}
-nav a{font-size:13px;font-weight:700;text-decoration:none;letter-spacing:.06em;position:relative}
-nav a::after{content:'';position:absolute;left:0;bottom:-4px;width:0;height:1px;background:var(--acc);transition:width .3s var(--ease)}
-nav a:hover::after{width:100%}
-/* первый экран */
-.mast{padding:clamp(48px,7vw,90px) 0 0}
-.mast-grid{display:grid;grid-template-columns:7fr 5fr;gap:clamp(28px,4vw,56px);align-items:start}
-.mast h1{font-size:clamp(2.5rem,5.4vw,4.4rem);margin:18px 0 20px;color:var(--ink)}
-.lead{color:var(--ink2);max-width:50ch;font-size:clamp(.98rem,1.2vw,1.08rem)}
-.mast-meta{display:flex;gap:0;margin-top:30px;border-top:1px solid var(--line2)}
-.mast-meta div{padding:14px 26px 0 0;margin-right:26px;border-right:1px solid var(--line)}
-.mast-meta div:last-child{border:none}
-.mast-meta b{font-family:var(--df);font-size:1.7rem;font-weight:600;display:block;line-height:1}
-.mast-meta span{font-family:var(--mf);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
-.ph-frame{margin-top:34px;background:var(--paper);border:1px solid var(--line);padding:10px;box-shadow:0 30px 60px -40px rgba(40,35,32,.5);position:relative}
-.ph-frame .im{overflow:hidden}
-.ph-frame img{width:100%}
-.kb .im img{animation:kb 18s ease-in-out infinite alternate}
-@keyframes kb{from{transform:scale(1)}to{transform:scale(1.08) translate(-1.4%,1%)}}
-.ph-frame figcaption{font-family:var(--mf);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);padding-top:9px;display:flex;justify-content:space-between}
-.stamp{position:absolute;top:-20px;right:18px;transform:rotate(3deg);background:var(--paper);border:1px solid var(--line2);padding:10px 14px;font-family:var(--mf);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);box-shadow:0 14px 30px -18px rgba(40,35,32,.5);z-index:2}
-.stamp b{color:var(--acc);display:block}
-/* опросник */
-.quiz{background:var(--paper);border:1px solid var(--line2);box-shadow:10px 10px 0 var(--greige);padding:clamp(22px,2.6vw,32px);position:sticky;top:88px}
-.quiz .q-top{display:flex;justify-content:space-between;margin-bottom:14px}
-.quiz .q-step{font-family:var(--mf);font-size:11px;letter-spacing:.18em;color:var(--ink2);text-transform:uppercase}
-.q-prog{height:3px;background:rgba(40,35,32,.1);margin-bottom:22px}
-.q-prog i{display:block;height:100%;background:var(--acc);width:0;transition:width .4s var(--ease)}
-.quiz h2{font-size:clamp(1.3rem,1.9vw,1.6rem);margin-bottom:18px;min-height:2.2em}
-.q-opts{display:grid;gap:9px}
-.q-opt{border:1px solid var(--line);padding:12px 15px;font-size:14px;font-weight:600;cursor:pointer;transition:.2s;display:flex;gap:12px;align-items:center;background:var(--cream)}
-.q-opt:hover{border-color:var(--acc)}
-.q-opt.sel{background:var(--ink);color:var(--cream);border-color:var(--ink)}
-.q-opt .bx{width:15px;height:15px;border:1px solid var(--line2);flex:none;display:grid;place-items:center;font-size:10px;color:transparent}
-.q-opt.sel .bx{background:var(--acc);border-color:var(--acc);color:#fff}
-.q-form .fld{margin-bottom:13px}
-.q-form label{display:block;font-family:var(--mf);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink2);margin-bottom:5px}
-.q-form input{width:100%;border:1px solid var(--line);background:var(--cream);padding:10px 12px;font-family:var(--bf);font-size:14px}
-.q-form input:focus{outline:none;border-color:var(--acc)}
-.q-nav{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:10px;flex-wrap:wrap}
-.q-back{font-family:var(--mf);font-size:12px;letter-spacing:.1em;color:var(--ink2)}
-.q-back:hover{color:var(--ink)}
-/* тикер */
-.ticker{border-block:1px solid var(--ink);background:var(--ink);color:var(--cream);overflow:hidden;margin-top:clamp(50px,7vw,90px)}
-.ticker div{display:flex;width:max-content;animation:tk 36s linear infinite}
-.ticker span{font-family:var(--mf);font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:13px 0;white-space:nowrap}
-.ticker b{color:var(--acc);font-weight:400;padding:0 18px}
-@keyframes tk{to{transform:translateX(-50%)}}
-/* результаты */
-#results{padding:clamp(60px,8vw,100px) 0 0;display:none}
-#results.on{display:block}
-.alerts{display:grid;gap:14px;margin:26px 0 40px}
-.alert{border:1px solid;padding:16px 20px;font-size:14.5px;display:flex;gap:14px;align-items:flex-start;background:var(--paper)}
-.alert .ic{font-family:var(--mf);font-weight:700;flex:none}
-.alert.bad{border-color:var(--bad);color:#7C2E22}
-.alert.warn{border:3px solid var(--warn);color:#6E561E}
-.alert.info{border-color:var(--brz);color:#5D4827}
-.alert.info .ic{color:var(--green);font-size:1.7rem;line-height:1;font-family:var(--bf);font-weight:800}
-.res-head{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:end;border-top:2px solid var(--ink);padding-top:22px}
-.res-head h2{font-size:clamp(1.7rem,3.2vw,2.6rem)}
-.res-meta{font-family:var(--mf);font-size:12px;color:var(--ink2);letter-spacing:.06em}
-.stages{margin-top:34px;border-top:1px solid var(--line)}
-.stg{border-bottom:1px solid var(--line);padding:24px 0;display:grid;grid-template-columns:70px 1fr;gap:18px}
-.stg .no{font-family:var(--df);font-style:italic;font-weight:600;color:var(--acc);font-size:1.5rem}
-.stg h3{font-size:1.35rem;margin-bottom:4px}
-.stg .tm{font-family:var(--mf);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
-.stg-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:14px}
-.stg-cols h4{font-family:var(--mf);font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
-.stg-cols ul{list-style:none;font-size:13.5px;color:var(--ink2)}
-.stg-cols li{padding:3px 0 3px 16px;position:relative}
-.stg-cols li::before{content:'';position:absolute;left:0;top:12px;width:9px;height:1px}
-.c-chk h4{color:var(--ok)}.c-chk li::before{background:var(--ok)}
-.c-err h4{color:var(--bad)}.c-err li::before{background:var(--bad)}
-.c-buy h4{color:var(--brz)}.c-buy li::before{background:var(--brz)}
-.xls-cta{margin:44px 0;background:var(--ink);color:var(--cream);padding:clamp(26px,3.4vw,42px);display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
-.xls-cta::after{content:'xlsx';position:absolute;right:-10px;bottom:-38px;font-family:var(--df);font-style:italic;font-size:9rem;color:rgba(244,239,231,.07);pointer-events:none}
-.xls-cta h3{font-size:clamp(1.3rem,2.2vw,1.9rem)}
-.xls-cta p{color:rgba(244,239,231,.65);font-size:14px;max-width:52ch}
-.xls-cta .btn{background:var(--acc);border-color:var(--acc)}
-.xls-cta .btn:hover{background:var(--cream);color:var(--ink);border-color:var(--cream)}
-/* будни — открытки */
-.life{padding:clamp(60px,8vw,100px) 0 0}
-.life h2{font-size:clamp(1.7rem,3.4vw,2.7rem);margin:14px 0 8px}
-.life .sub{color:var(--ink2);max-width:56ch;margin-bottom:38px}
-.cards{display:flex;gap:26px;overflow-x:auto;padding:14px 4px 30px;scroll-snap-type:x mandatory;cursor:grab;scrollbar-width:none}
-.cards::-webkit-scrollbar{display:none}
-.pc{flex:0 0 min(300px,78vw);scroll-snap-align:start;background:var(--paper);border:1px solid var(--line);padding:12px 12px 18px;box-shadow:0 24px 46px -30px rgba(40,35,32,.55);transition:transform .45s var(--ease);position:relative}
-.pc::before{content:'';position:absolute;top:-12px;left:50%;width:74px;height:24px;transform:translateX(-50%) rotate(-2deg);background:rgba(230,221,206,.85);z-index:2}
-.pc:nth-child(odd){transform:rotate(-1.6deg)}
-.pc:nth-child(even){transform:rotate(1.4deg)}
-.pc:hover{transform:rotate(0) translateY(-8px)}
-.pc img{width:100%;aspect-ratio:3/3.6;object-fit:cover}
-.pc figcaption{font-family:var(--mf);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);padding-top:12px;display:flex;justify-content:space-between}
-.pc figcaption b{color:var(--acc);font-weight:500}
-/* база этапов */
-.sec{padding:clamp(60px,8vw,110px) 0 0}
-.split{display:grid;grid-template-columns:5fr 7fr;gap:clamp(28px,4vw,60px);align-items:start}
-.split .sticky{position:sticky;top:96px}
-.split h2{font-size:clamp(1.7rem,3.2vw,2.6rem);margin:14px 0 12px}
-.split .sub{color:var(--ink2);max-width:46ch}
-.acc{border-top:1px solid var(--line)}
-.acc-i{border-bottom:1px solid var(--line)}
-.acc-q{width:100%;display:flex;justify-content:space-between;gap:18px;align-items:center;text-align:left;padding:19px 2px}
-.acc-q .t{font-weight:800;font-size:clamp(.95rem,1.4vw,1.08rem);font-family:var(--bf)}
-.acc-q .n{font-family:var(--df);font-style:italic;color:var(--acc);font-size:1.15rem;margin-right:12px}
-.acc-q .pl{width:30px;height:30px;border:1px solid var(--line2);display:grid;place-items:center;flex:none;transition:.3s var(--ease);font-size:15px}
-.acc-i.open .pl{transform:rotate(45deg);background:var(--acc);border-color:var(--acc);color:#fff}
-.acc-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s var(--ease)}
-.acc-i.open .acc-a{grid-template-rows:1fr}
-.acc-a>div{overflow:hidden}
-.acc-body{padding:0 2px 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.acc-body h5{font-family:var(--mf);font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
-.acc-body ul{list-style:none;font-size:13.5px;color:var(--ink2)}
-.acc-body li{padding:3px 0 3px 16px;position:relative}
-.acc-body li::before{content:'';position:absolute;left:0;top:12px;width:9px;height:1px;background:var(--ink2)}
-/* футер */
-footer{background:var(--greige);padding:56px 0 30px}
-footer .big{font-family:var(--df);font-weight:600;font-size:clamp(3rem,9vw,7rem);line-height:1;color:var(--ink)}
-footer .cols{display:flex;flex-wrap:wrap;gap:26px;justify-content:space-between;margin:30px 0;padding-top:24px;border-top:1px solid var(--line2);font-size:13.5px;color:var(--ink2)}
-footer .disc{font-family:var(--mf);font-size:10.5px;letter-spacing:.06em;color:var(--ink2);max-width:74ch}
-.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,16px);background:var(--ink);color:var(--cream);border:1px solid var(--acc);padding:12px 22px;font-family:var(--mf);font-size:12px;opacity:0;pointer-events:none;transition:.3s;z-index:99}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:960px){
-  .mast-grid,.split{grid-template-columns:1fr}
-  .quiz,.split .sticky{position:static}
-  .stg-cols,.acc-body{grid-template-columns:1fr}
-  nav{display:none}
-}
-@media(max-width:520px){
-  .q-nav .btn{width:100%;justify-content:center;font-size:13px}
-}
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
-  html{scroll-behavior:auto}
-  [data-reveal]{opacity:1;transform:none}
-  .lm .lm-l>span{transform:none}
-}
-</style>
-</head>
-<body>
+:root{--bg:#F0EBE4;--card:#FAF7F1;--line:#D9D2C2;--line2:#A7A39A;--ink:#2C2C2A;--ink2:#6B6963;--ok:#7C826E;--warn:#8B7F6E;--bad:#4A4239;--f:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.55}
+button,input{font-family:var(--f);font-size:16px;color:var(--ink)}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px}
+h1,h2{font-size:26px;font-weight:700;line-height:1.2;margin:0 0 8px}h3{font-size:16px;font-weight:700}
+.sub{color:var(--ink2);font-size:16px}.m13{font-size:13px;color:var(--ink2)}
+.kick{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--bad)}
+header{border-bottom:1px solid var(--line);background:var(--bg);position:sticky;top:0;z-index:20}
+header .wrap{display:flex;justify-content:space-between;align-items:center;height:68px;gap:10px}
+.logo{font-weight:700;font-size:26px;letter-spacing:.1em}
+nav{display:flex;gap:16px}nav a{font-size:13px;font-weight:700;text-decoration:none;color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:12px}
+.btn{display:block;width:100%;background:var(--ink);color:var(--bg);border:1px solid var(--ink);border-radius:8px;padding:13px 16px;font-weight:600;font-size:16px;text-align:center;cursor:pointer}
+.btn.small{width:auto;display:inline-block;padding:10px 14px}.btn.ghost{background:transparent;color:var(--ink)}
+.hero-ph{margin:14px 0}.hero-ph img{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid var(--line);border-radius:10px}
+.mission{font-size:16px;color:var(--ink2);margin:0 0 14px}
+.value{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:0 0 16px}
+.value ul{list-style:none;margin-top:6px}.value li{font-size:13px;color:var(--ink2);padding:3px 0 3px 14px;position:relative}.value li::before{content:'·';position:absolute;left:2px;font-weight:700}
+.fork{display:grid;gap:10px;margin-top:6px}
+.fk{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:14px;text-align:left;cursor:pointer;color:var(--ink)}
+.fk.on{border-color:var(--ink)}.fk b{display:block;font-size:16px;margin-bottom:6px}
+.fk ul{list-style:none;margin-top:6px}.fk li{font-size:13px;color:var(--ink2);padding:3px 0 3px 14px;position:relative}.fk li::before{content:'·';position:absolute;left:2px;font-weight:700}
+.fk .tag{font-size:13px;text-transform:uppercase;border:1px solid var(--line2);border-radius:4px;padding:2px 8px;color:var(--ink2)}
+.q-top{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);margin-bottom:8px}
+.q-prog{height:4px;background:var(--line);border-radius:2px;margin-bottom:16px}.q-prog i{display:block;height:100%;background:var(--ink);width:0}
+#qTitle{min-height:2.2em;margin-bottom:12px;font-size:26px}
+.q-opts{display:grid;gap:8px}.q-opt{border:1px solid var(--line);border-radius:8px;padding:12px 13px;font-size:16px;font-weight:600;cursor:pointer;display:flex;gap:10px;align-items:center;background:#fff}
+.q-opt.sel{background:var(--ink);color:var(--bg)}.q-opt .bx{width:16px;height:16px;border:1px solid var(--line2);border-radius:4px;flex:none;display:grid;place-items:center;font-size:13px;color:transparent}.q-opt.sel .bx{background:var(--bg);border-color:var(--bg);color:var(--ink)}
+.q-form .fld{margin-bottom:10px}.q-form label{display:block;font-size:13px;text-transform:uppercase;color:var(--ink2);margin-bottom:4px}.q-form input{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;padding:11px}
+.q-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}.q-back{background:none;border:none;font-size:13px;color:var(--ink2);cursor:pointer;padding:8px}
+#resNew,#resPro{display:none}#resNew.on,#resPro.on{display:block}
+.gloss{border:1px dashed var(--line2);border-radius:10px;background:var(--card);padding:12px 14px;margin-top:12px;display:none}.gloss.on{display:block}.gloss h4{font-size:13px;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}.gloss div{font-size:16px;color:var(--ink2);padding:2px 0}.gloss b{color:var(--ink)}
+.alerts{display:grid;gap:8px;margin-top:12px}.alert{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:12px 14px;font-size:16px;display:flex;gap:10px}.alert .ic{font-weight:700;flex:none}.alert.bad{border-color:var(--bad);color:var(--bad)}.alert.warn{border:3px solid var(--warn);color:var(--bad)}.alert.info{border-color:var(--ok);color:var(--ink)}
+.res-head{border-top:2px solid var(--ink);margin-top:18px;padding-top:14px}.res-meta{font-size:13px;color:var(--ink2);margin-top:4px}
+.stg{border-bottom:1px solid var(--line);padding:14px 0}.stg .no{font-size:13px;color:var(--ink2)}.stg h3{margin:2px 0}.stg .tm{font-size:13px;color:var(--ink2)}
+.scheme{margin:8px 0}.scheme img{width:100%;aspect-ratio:16/9;object-fit:cover;border:1px solid var(--line);border-radius:8px}.sch-cap{font-size:13px;color:var(--ink2);margin-top:4px}
+.stg-cols{margin-top:8px;display:grid;gap:10px}.stg-cols h4{font-size:13px;text-transform:uppercase;margin-bottom:4px}.stg-cols ul{list-style:none;font-size:16px;color:var(--ink2)}.stg-cols li{padding:2px 0 2px 13px;position:relative}.stg-cols li::before{content:'—';position:absolute;left:0;color:var(--line2)}
+.c-chk h4{color:var(--ok)}.c-err h4{color:var(--bad)}.c-buy h4{color:var(--ink2)}
+.xls-cta{background:var(--ink);color:var(--bg);border-radius:10px;padding:16px;margin-top:16px}.xls-cta .free{display:inline-block;font-size:13px;text-transform:uppercase;border:1px solid var(--ok);color:#A9B39A;border-radius:4px;padding:3px 8px;margin-bottom:8px}.xls-cta p{color:#B8B1A4;font-size:13px;margin:6px 0 12px}.xls-cta .btn{background:var(--bg);color:var(--ink);border-color:var(--bg)}
+.cab .note{font-size:13px;color:var(--ink2);border:1px dashed var(--line2);border-radius:8px;padding:8px 10px;margin-top:10px}
+.cal-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line);font-size:16px}.cal-row input[type=checkbox]{width:18px;height:18px;flex:none;margin-top:2px}.cal-date{font-size:13px;color:var(--ink2);min-width:42px;margin-top:3px}
+.cal-note{width:100%;border:none;background:transparent;font-size:13px;color:var(--ink2);border-top:1px dashed var(--line);margin-top:4px;padding:2px 0}
+.folders{list-style:none;margin-top:6px}.folders li{padding:8px 0;border-top:1px solid var(--line);font-size:16px;display:flex;justify-content:space-between;gap:8px}.folders li span{color:var(--ink2);font-size:13px}
+.swrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:16px}
+.sw{position:relative;width:44px;height:24px;flex:none}.sw input{position:absolute;opacity:0}.sw .kn{position:absolute;inset:0;border:1px solid var(--line2);border-radius:14px;background:#fff}.sw .kn::after{content:'';position:absolute;top:3px;left:4px;width:16px;height:16px;border-radius:50%;background:var(--ink2);transition:.2s}.sw input:checked+.kn{background:var(--ink);border-color:var(--ink)}.sw input:checked+.kn::after{left:22px;background:var(--bg)}
+.sec{margin-top:40px}
+.acc{border-top:1px solid var(--line);margin-top:10px}.acc-i{border-bottom:1px solid var(--line)}
+.acc-q{width:100%;display:flex;justify-content:space-between;gap:12px;align-items:center;text-align:left;padding:13px 2px;background:none;border:none;cursor:pointer;color:var(--ink)}.acc-q .t{font-weight:600;font-size:16px}.acc-q .n{color:var(--ink2);font-size:13px;margin-right:6px}.acc-q .pl{width:24px;height:24px;border:1px solid var(--line2);border-radius:6px;display:grid;place-items:center;flex:none;font-size:13px}
+.acc-i.open .pl{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.acc-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s}.acc-i.open .acc-a{grid-template-rows:1fr}.acc-a>div{overflow:hidden}
+.acc-body{padding:0 2px 14px;display:grid;gap:10px}.acc-body h5{font-size:13px;text-transform:uppercase;margin-bottom:4px}.acc-body ul{list-style:none;font-size:16px;color:var(--ink2)}.acc-body li{padding:2px 0 2px 13px;position:relative}.acc-body li::before{content:'—';position:absolute;left:0;color:var(--line2)}
+.t-q{font-size:16px;font-weight:600;margin:6px 0 12px;min-height:3.2em}.t-btns{display:flex;gap:8px}.t-btns button{flex:1;padding:12px 0;border:1px solid var(--line2);border-radius:8px;background:#fff;font-size:16px;font-weight:600;cursor:pointer}.t-btns button:active{background:var(--ink);color:var(--bg)}
+.t-score{font-size:26px;font-weight:700;margin:6px 0}.t-tier{font-size:16px;color:var(--ink2);margin-bottom:12px}
+.t-weak{list-style:none;margin:10px 0}.t-weak li{padding:10px 0;border-top:1px solid var(--line);font-size:16px}.t-weak li b{display:block}.t-weak li span{color:var(--ink2);font-size:13px}
+.docs{display:grid;gap:8px;margin-top:10px}.docs .card{margin-top:0}.docs .when{font-size:13px;color:var(--ink2);margin:4px 0 10px}
+.case b{display:block;font-size:16px}.case p{font-size:13px;color:var(--ink2);margin-top:4px}.case .tag{display:inline-block;font-size:13px;text-transform:uppercase;border:1px solid var(--line2);border-radius:4px;padding:2px 7px;color:var(--ink2);margin-bottom:6px}
+.cons{font-size:13px;color:var(--ink2);display:flex;gap:6px;align-items:flex-start;margin-bottom:8px}.cons input{margin-top:3px}
+.wl input{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;padding:11px;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}.chips button{font-size:13px;border:1px solid var(--line2);border-radius:14px;padding:5px 12px;background:#fff;cursor:pointer}
+.chips button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sup-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pol{background:#fff;border:1px solid var(--line);padding:8px 8px 10px;box-shadow:0 6px 14px -8px rgba(44,44,42,.35);cursor:pointer;transform:rotate(-1.2deg)}
+.pol:nth-child(even){transform:rotate(1.2deg)}
+.pol .ph{position:relative;aspect-ratio:4/3;background:var(--line);border-radius:4px;overflow:hidden}
+.pol .ph img{width:100%;height:100%;object-fit:cover}
+.pol .cat{position:absolute;left:6px;bottom:6px;font-size:11px;background:rgba(240,235,228,.9);padding:2px 6px;border-radius:3px}
+.pol b{display:block;font-size:14px;margin-top:6px}
+.pol .det{display:none;font-size:13px;color:var(--ink2);margin-top:4px}
+.pol.open .det{display:block}.pol.open{transform:none}
+.album{display:flex;gap:8px;overflow-x:auto;margin-top:10px;padding-bottom:4px}.album figure{flex:0 0 230px}.album img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid var(--line);border-radius:8px}.album figcaption{font-size:13px;color:var(--ink2);margin-top:4px}
+.meme{position:relative;margin:18px 0}.meme img{width:100%;border:2px solid var(--ink);border-radius:8px}
+.meme .cap{position:absolute;font-weight:700;line-height:1.25;color:var(--ink);font-size:clamp(11px,2.6vw,15px)}
+.meme .who{position:absolute;color:var(--ink2);font-size:clamp(10px,2.2vw,13px)}
+footer{margin-top:44px;border-top:1px solid var(--line);padding:18px 0 26px;color:var(--ink2);font-size:13px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,12px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:8px;font-size:16px;opacity:0;pointer-events:none;transition:.25s;z-index:99}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:720px){.fork,.value{grid-template-columns:1fr}.hero-ph img{aspect-ratio:21/9}.sup-grid{grid-template-columns:1fr 1fr}nav{display:none}}
+@media (prefers-reduced-motion: reduce){*{transition-duration:.01ms!important}html{scroll-behavior:auto}}
+</style></head><body>
 <div class="toast" id="toast"></div>
-
-<header><div class="wrap">
-  <a class="logo" href="#top">Штаб_надзор</a>
-  <nav><a href="#quiz">Диагностика</a><a href="#base">База этапов</a></nav>
-  <span class="mono" style="font-size:11px;color:var(--ink2)">для дизайнеров интерьера</span>
-</div></header>
-
-<main id="top">
-<section class="mast"><div class="wrap mast-grid">
-  <div>
-    <p class="kick" data-reveal>авторский надзор · самоконтроль · стройка</p>
-    <h1 class="lm" data-reveal>
-      <span class="lm-l" style="--d:.08s"><span>Проект становится</span></span>
-      <span class="lm-l" style="--d:.18s"><span>реальностью —</span></span>
-      <span class="lm-l" style="--d:.28s"><span>по графику.</span></span>
-    </h1>
-    <p class="lead" data-reveal style="--d:.35s">ШТАБ помогает собирать дизайнеру систему самоконтроля на стройке: план этапов с приёмками, график закупок и Excel таблицу с графиком работ для контроля строительных бригад и подрядчиков</p>
-    <div class="mast-meta" data-reveal style="--d:.45s">
-      <div><b>13</b><span>этапов в базе</span></div>
-      <div><b>~26</b><span>недель цикл</span></div>
-      <div><b>8</b><span>листов Excel</span></div>
-    </div>
-    <figure class="ph-frame kb" data-reveal style="--d:.5s" onerror="this.style.display='none'">
-      <div class="stamp"><b>авторский надзор</b>СП 246.1325800.2016 · журнал · предписания</div>
-      <div class="im"><img src="images/hero.jpg" alt="Интерьер: эскиз переходит в реальность" onerror="this.closest('figure').style.display='none'"></div>
-      <figcaption><span>эскиз → реализация</span><span>fig. 01</span></figcaption>
-    </figure>
-  </div>
-
-  <div class="quiz" id="quiz" data-reveal style="--d:.3s">
-    <div class="q-top"><span class="q-step" id="qStep">шаг 1 / 6</span><span class="mono" style="font-size:11px;color:var(--acc)">~1 минута</span></div>
-    <div class="q-prog"><i id="qProg"></i></div>
-    <h2 id="qTitle"></h2>
-    <div class="q-opts" id="qOpts"></div>
-    <div class="q-nav"><button class="q-back" id="qBack">← назад</button><button class="btn" id="qNext" style="padding:12px 22px">Далее <span class="arr">→</span></button></div>
-  </div>
+<header><div class="wrap"><span class="logo">ШТАБ НАДЗОР</span><nav><a href="#quiz">Диагностика</a><a href="#base">База этапов</a><a href="#sup">Поставщики</a></nav><span class="m13">для дизайнеров интерьера</span></div></header>
+<main><div class="wrap">
+<p class="kick" style="margin-top:20px">Авторский надзор · Самоконтроль · Стройка</p>
+<h1>Проект становится реальностью</h1>
+<figure class="hero-ph"><img src="images/hero.jpg" alt="Чертёж переходит в реализацию" loading="lazy" onerror="this.parentNode.style.display='none'"></figure>
+<p class="mission">ШТАБ помогает собрать дизайнеру систему самоконтроля на стройке: план этапов с приёмками, график закупок и Excel-таблицу с графиком работ для контроля бригад, подрядчиков и себя.<br>Наша миссия: из режима «тушить пожары» уйти в режим «спокойный контроль».<br>Проверь себя — это входит в работу дизайнера на объекте:</p>
+<div class="value">
+<div><h3>Авторский надзор</h3><ul><li>Координация строительных работ</li><li>Работа с подрядчиками</li><li>Техническая экспертиза</li><li>Документооборот</li><li>Эстетический контроль</li></ul></div>
+<div><h3>Комплектация объекта</h3><ul><li>Поиск материалов и мебели</li><li>Техническая экспертиза</li><li>Логистика и хранение</li><li>Работа с поставщиками</li><li>Документооборот и финансы</li><li>Риски ошибок и перерасхода бюджета</li></ul></div>
 </div>
-<div class="ticker"><div>
-  <span>демонтаж<b>·</b>перегородки<b>·</b>инженерка<b>·</b>стяжка<b>·</b>штукатурка<b>·</b>электрика<b>·</b>гкл<b>·</b>плитка<b>·</b>малярка<b>·</b>полы<b>·</b>монтаж<b>·</b>мебель<b>·</b>приёмка актами<b>·</b></span>
-  <span>демонтаж<b>·</b>перегородки<b>·</b>инженерка<b>·</b>стяжка<b>·</b>штукатурка<b>·</b>электрика<b>·</b>гкл<b>·</b>плитка<b>·</b>малярка<b>·</b>полы<b>·</b>монтаж<b>·</b>мебель<b>·</b>приёмка актами<b>·</b></span>
-</div></div>
+<div class="fork" id="fork">
+<button class="fk on" data-t="new"><b>Я начинающий дизайнер</b><span class="tag">бесплатно · без регистрации</span><ul><li>анкета — паспорт объекта</li><li>Excel-таблица (приложение к журналу авторского надзора) с выгрузкой</li><li>доступ к базе этапов и чек-листам</li></ul></button>
+<button class="fk" data-t="pro"><b>Я опытный дизайнер</b><span class="tag">кабинет · бесплатно при запуске</span><ul><li>анкета — паспорт объекта</li><li>кабинет штаба: папки (альбом, фото, документы + свои)</li><li>календарь работ с отметками, записями и ссылками на папки</li><li>Excel с выгрузкой · вся база знаний</li><li>доступ клиенту и прорабу к просмотру — без редактирования</li></ul></button>
+</div>
+<div class="card" id="quiz">
+<div class="q-top"><span id="qStep">шаг 1 / 6</span><span>~1 минута</span></div>
+<div class="q-prog"><i id="qProg"></i></div>
+<h2 id="qTitle"></h2>
+<div class="q-opts" id="qOpts"></div>
+<div class="q-nav"><button class="q-back" id="qBack">← назад</button><button class="btn small" id="qNext">Далее →</button></div>
+</div>
+<section id="resNew">
+<div class="gloss" id="gloss"><h4>Коротко о терминах</h4><div><b>Дефектовка</b> — осмотр и фотофиксация дефектов до начала работ.</div><div><b>Опрессовка</b> — проверка герметичности давлением, с актом.</div><div><b>Слаботочка</b> — интернет, ТВ, домофон.</div><div><b>Коллекторный узел</b> — точка разводки воды; нужен доступ.</div><div><b>Теневой профиль</b> — скрытое примыкание стены к потолку/полу.</div></div>
+<div class="alerts" id="alerts"></div>
+<div class="card" id="resScopes"></div>
+<div class="res-head"><h2 id="resTitle"></h2><div class="res-meta" id="resMeta"></div></div>
+<div id="stages"></div>
+<div class="xls-cta"><span class="free">бесплатно навсегда</span><h3>Приложение к журналу авторского надзора</h3><p id="xlsNote"></p><button class="btn xlsbtn">⬇ Скачать таблицу .xlsx</button></div>
+<div class="card"><h3>Вырастете из таблицы?</h3><p class="sub" style="margin:6px 0 10px">Создайте свой штаб: кабинет, календарь, папки, доступы.</p><form class="wl"><input type="text" placeholder="Ваше имя" required><input type="email" placeholder="E-mail" required><label class="cons"><input type="checkbox" required>соглашаюсь на обработку персональных данных для связи по проекту</label><button class="btn" type="submit">В лист ожидания «Моего штаба»</button></form></div>
 </section>
-
-<section id="results"><div class="wrap">
-  <p class="kick" data-reveal>ваш штаб собран</p>
-  <div class="alerts" id="alerts"></div>
-  <div class="res-head" data-reveal>
-    <h2 id="resTitle"></h2>
-    <div class="res-meta" id="resMeta"></div>
-  </div>
-  <div class="stages" id="stages"></div>
-  <div class="xls-cta" data-reveal>
-    <div><h3>Приложение к журналу авторского надзора</h3><p id="xlsNote"></p></div>
-    <button class="btn" id="xlsBtn">⬇ Скачать таблицу .xlsx</button>
-  </div>
+<section id="resPro">
+<div class="card cab">
+<div class="scheme"><img src="images/mentor.jpg" alt="Дизайнер с рулонами чертежей" loading="lazy" onerror="this.parentNode.style.display='none'"><div class="sch-cap">Дизайнер — хозяин на объекте; менеджер — тяжёлая артиллерия.</div></div>
+<h3>Ваш штаб собран (демо)</h3><div class="res-meta" id="cabMeta"></div>
+<h3 style="margin-top:14px">Календарь ключевых отметок</h3><div id="calList"></div>
+<h3 style="margin-top:14px">Папки проекта</h3><ul class="folders" id="foldList"></ul>
+<button class="btn small ghost" id="foldAdd" style="margin-top:8px">+ создать папку</button>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small ghost" id="expBtn">Экспорт моего штаба</button><button class="btn small ghost" id="impBtn">Импорт</button><input type="file" id="impFile" accept=".json" hidden></div>
+<h3 style="margin-top:14px">Доступы (просмотр без редактирования)</h3>
+<div class="swrow"><span>Клиент: календарь и папки</span><label class="sw"><input type="checkbox" class="accsw"><span class="kn"></span></label></div>
+<div class="swrow"><span>Прораб: календарь</span><label class="sw"><input type="checkbox" class="accsw"><span class="kn"></span></label></div>
+<div class="note">Данные хранятся на вашем устройстве; экспорт/импорт — для резервных копий и передачи в облако второй фазы. 1-й проект бесплатно.</div>
+</div>
+<div class="xls-cta"><span class="free">входит в кабинет</span><h3>Приложение к журналу авторского надзора</h3><p id="xlsNote2"></p><button class="btn xlsbtn">⬇ Скачать таблицу .xlsx</button></div>
+<div class="card"><form class="wl"><input type="text" placeholder="Ваше имя" required><input type="email" placeholder="E-mail" required><label class="cons"><input type="checkbox" required>соглашаюсь на обработку персональных данных для связи по проекту</label><button class="btn" type="submit">Зарегистрироваться при запуске</button></form></div>
+</section>
+<section class="sec" id="base"><h2>База знаний: этапы и приёмки</h2><p class="sub">Рутину стройки — графики, чек-листы, журнал — ШТАБ берёт на себя. Материалы справочные.</p>
+<div class="acc" id="acc0"></div><div class="acc" id="baseAcc"></div><div class="acc" id="accAcc"></div></section>
+<section class="sec"><h2>Работа над ошибками</h2><p class="sub">ШТАБ-индекс: оцените проект по 11 контрольным точкам (1–5) — получите вердикт и советы по слабым местам.</p><div class="card" id="testBox"></div>
+<h2 style="margin-top:26px">Рекламации: шаблоны и кейсы</h2><p class="sub">Обобщены из реальной практики, данные заменены прочерками. Кейсы анонимны.</p>
+<div class="docs" id="docsList"></div><div class="docs" id="casesList"></div></section>
+<section class="sec"><h2>Документы и право — всё бесплатно</h2>
+<div class="docs" id="docs2"></div>
+<div class="card"><ul class="acc-body" style="padding:8px 0 0"><li style="padding:2px 0 2px 13px;position:relative;color:var(--ink2)">Зона ответственности — только то, что прописано в договоре; «объём работы» — приложением.</li><li style="padding:2px 0 2px 13px;position:relative;color:var(--ink2)">Приёмка — актами ежемесячно; 5 раб. дней на возражения, иначе услуги приняты.</li><li style="padding:2px 0 2px 13px;position:relative;color:var(--ink2)">Оплата — предоплата месяца; просрочка → приостановка услуг (ст. 328 ГК).</li><li style="padding:2px 0 2px 13px;position:relative;color:var(--ink2)">Эскалация замечаний: прораб → 3 дня → официальная претензия.</li><li style="padding:2px 0 2px 13px;position:relative;color:var(--ink2)">Переписка по e-mail/мессенджерам — юридически значимая (ст. 165.1 ГК).</li></ul></div>
+<div class="card"><h3>ГОСТ и СП — для спора</h3><ul class="acc-body" style="padding:8px 0 0"><li style="padding:2px 0 2px 13px;position:relative;color:var(--ink2)">СП 71.13330.2017: с 01.02.2026 таблицы качества исключены — качество = требования заказчика, то есть ваш чек-лист в договоре.</li><li style="padding:2px 0 2px 13px;position:relative;color:var(--ink2)">СП 256.1325800.2016 — электрика; нормы безопасности обязательны.</li><li style="padding:2px 0 2px 13px;position:relative;color:var(--ink2)">СП 163.1325800.2014 — ГКЛ-конструкции.</li><li style="padding:2px 0 2px 13px;position:relative;color:var(--ink2)">Штукатурка: фиксируйте «высококачественная, 1–2 мм/м» — иначе спор решится «по средней».</li></ul></div></section>
+<section class="sec" id="sup"><h2>Куда съездить с клиентом</h2><p class="sub">Поставщики и шоурумы СПб. Карточка-полароид раскрывается по клику; фото подтянутся из images/partners/ (имя файла = название латиницей). Партнёрские карточки — после согласования.</p>
+<div class="chips" id="chips"></div>
+<div class="sup-grid" id="supGrid"></div>
+<div class="card" style="margin-top:14px"><h3>Стать партнёром</h3><p class="sub" style="margin:6px 0 10px">Хотите попасть в рекомендации дизайнерам? Расскажите о шоуруме.</p><form class="wl"><input type="text" placeholder="Компания" required><input type="email" placeholder="E-mail" required><label class="cons"><input type="checkbox" required>соглашаюсь на обработку персональных данных</label><button class="btn" type="submit">Отправить заявку</button></form></div></section>
+<section class="sec"><h2>Журнал</h2><div class="docs">
+<div class="card"><b>Полевой альбом</b><p class="when">Живые кадры с объектов: так это выглядит в реальности.</p><div class="album">
+<figure><img src="images/hero.jpg" loading="lazy" onerror="this.parentNode.style.display='none'"><figcaption>Выкрасы на стене: цвет при реальном свете</figcaption></figure>
+<figure><img src="images/vykrasy-brick.jpg" loading="lazy" onerror="this.parentNode.style.display='none'"><figcaption>Stone Desert и Capuccino на кирпиче: подпись и дата</figcaption></figure>
+<figure><img src="images/ncs-fan.jpg" loading="lazy" onerror="this.parentNode.style.display='none'"><figcaption>NCS: код уходит в примечания чертежа</figcaption></figure>
+<figure><img src="images/parquet-bamboo.jpg" loading="lazy" onerror="this.parentNode.style.display='none'"><figcaption>Бамбук «Сканди»: образец сверяем с полом на объекте</figcaption></figure>
+<figure><img src="images/fabric-wall.jpg" loading="lazy" onerror="this.parentNode.style.display='none'"><figcaption>Ткань у стены будущего интерьера</figcaption></figure>
+</div></div>
+<div class="card"><b>Умный дом: 3 уровня и приёмка</b><p class="when">Экосистема → полупро → проводные KNX/DALI (проект до черновых). Главное: пароли переданы клиенту; хаб выключен — выключатели работают; тест протечки — намочить датчик.</p></div>
+<div class="card"><b>Новые отделочные материалы</b><p class="when">Готовится: бамбук, гибкий камень, микроплинтус, пробковый компенсатор.</p></div>
 </div></section>
-
-<section class="life"><div class="wrap">
-  <p class="kick" data-reveal>будни дизайнера</p>
-  <h2 class="lm" data-reveal><span class="lm-l"><span>Образцы, мудборды, чертежи —</span></span><span class="lm-l"><span>это <em>ваша</em> часть работы.</span></span></h2>
-  <p class="sub" data-reveal>Рутину стройки — графики, чек-листы, журнал надзора — ШТАБ берёт на себя.</p>
-  <div class="cards" data-reveal>
-    <figure class="pc"><img src="images/mentor.jpg" alt="Наставник ШТАБа в шоуруме камня с рулонами чертежей" onerror="this.closest('figure').style.display='none'"><figcaption><span>выбор камня · наставник</span><b>fig. 02</b></figcaption></figure>
-    <figure class="pc"><img src="images/pantone.jpg" alt="Подбор палитры по вееру образцов" onerror="this.closest('figure').style.display='none'"><figcaption><span>подбор палитры</span><b>fig. 03</b></figcaption></figure>
-    <figure class="pc"><img src="images/stone.jpg" alt="Образцы камня поверх чертежей, вид сверху" onerror="this.closest('figure').style.display='none'"><figcaption><span>камень и чертежи</span><b>fig. 04</b></figcaption></figure>
-    <figure class="pc"><img src="images/moodboard.jpg" alt="Дизайнер перед стеной мудборда" onerror="this.closest('figure').style.display='none'"><figcaption><span>стена-мудборд</span><b>fig. 05</b></figcaption></figure>
-    <figure class="pc"><img src="images/desk.jpg" alt="Рабочее место дизайнера с чертежами и образцами" onerror="this.closest('figure').style.display='none'"><figcaption><span>чертёжный день</span><b>fig. 06</b></figcaption></figure>
-  </div>
-</div></section>
-
-<section class="sec" id="base"><div class="wrap split">
-  <div class="sticky" data-reveal>
-    <p class="kick">база знаний</p>
-    <h2>13 этапов: проверять, не ошибаться, <em>держать в голове</em></h2>
-    <p class="sub">Это же содержание попадает в ваш Excel. Цифры ориентировочные — сверяйте с проектом и техкартами.</p>
-    <figure class="ph-frame" style="margin-top:26px">
-      <div class="im"><img src="images/slabs.jpg" alt="Два образца мрамора поверх чертежа" onerror="this.closest('figure').style.display='none'"></div>
-      <figcaption><span>материалы поверх чертежа</span><span>fig. 07</span></figcaption>
-    </figure>
-  </div>
-  <div class="acc" id="baseAcc"></div>
-</div></section>
-</main>
-
-<footer><div class="wrap">
-  <div class="big">Штаб_надзор</div>
-  <div class="cols">
-    <span>© 2026 · сделано для начинающих дизайнеров</span>
-    <span>опросник → план → приложение к журналу авторского надзора</span>
-  </div>
-  <p class="disc">Материалы справочные. Размеры, сроки и нормы сверяйте с рабочей документацией, СП и договором.</p>
-</div></footer>
-
+<div class="meme" aria-label="Шуточный комикс">
+<img src="images/meme.png" alt="Комикс: квантовая связь и желания заказчика" loading="lazy" onerror="this.parentNode.style.display='none'">
+<div class="cap" style="left:5%;top:6%;max-width:40%">Я — самая сложная и запутанная связь в мире!</div>
+<div class="who" style="left:15%;top:34%">Квантовая связь</div>
+<div class="cap" style="left:56%;top:6%">АХАХАХАХ</div>
+<div class="cap" style="left:5%;top:56%">Ох насмешил, малыш!</div>
+<div class="who" style="left:58%;top:82%">Желания заказчика</div>
+</div>
+</div></main>
+<footer><div class="wrap">© 2026 ШТАБ НАДЗОР · материалы справочные; размеры и нормы сверяйте с рабочей документацией, СП и договором.</div></footer>
 <script>
 'use strict';
-const $=(s,c=document)=>c.querySelector(s),$$=(s,c=document)=>[...c.querySelectorAll(s)];
-const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-let toastT;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400)};
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
-$$('[data-reveal]').forEach(el=>reduced?el.classList.add('in'):io.observe(el));
-const plural=(n,a,b,c)=>{const m=n%100;if(m>=11&&m<=14)return c;switch(n%10){case 1:return a;case 2:case 3:case 4:return b;default:return c}};
-
-const ST=[
-{n:'Демонтаж и подготовка',w:1,d:2,team:'Подрядчик',sec:1,
- chk:['Демонтаж строго по плану перепланировки, несущие не тронуты','Дефектовка стыков, откосов, следов протечек до начала работ','Стояки и вентшахты сохранены'],
- err:['Снесли несущее/опорное без согласования','Не заметили протечку от соседей до старта — потом это ваша «вина»','Мусор вывозят без защиты лифтов и мест общего пользования'],
- dim:['Дефектовка — актом с фото, в первый день','Газобетон у сплит-шахт — только по проекту'],buy:[]},
-{n:'Разметка и перегородки',w:3,d:2,team:'Подрядчик',
- chk:['Геометрия по плану: оси, проёмы, высоты','Толщина перегородки = конструктив + отделка (плитка/клей 6–10 мм)','Закладные под тяжёлые навесные предметы'],
- err:['Толщина без учёта отделки — дверь или душ «не встают»','Нет закладных под кухню/бойлер — потом сверлим вслепую'],
- dim:['Пазогребень 80–100 мм · газобетон 100–150 мм · ГКЛ в 2 слоя по 12,5 мм','Проемы: +10 мм на пену/шов с каждой стороны'],buy:['Материал перегородок — к началу этапа']},
-{n:'Инженерка в полу: сантехника, отопление, электрика, вентиляция',w:5,d:3,team:'Подрядчик',
- chk:['Опрессовка отопления и водоснабжения — актом!','Фотофиксация ВСЕХ скрытых трасс с привязкой к стенам','Уклон канализации 2–3 см/м, трассы в гофре/изоляции'],
- err:['Без опрессовки залили стяжку — течь найдёте у соседей','Нет фотофиксации — через год нельзя сверлить пол','Трассы вентиляции в стяжке без проекта высот'],
- dim:['Коллекторные узлы — доступ и ревизия','Скрытые части смесителей, трапы — по техкартам ДО заливки'],buy:['Черновая сантехника и электрика — за 1–2 нед','Вентиляция/кондиционирование — срок поставки до 4 нед']},
-{n:'Стяжка пола',w:8,d:2,team:'Подрядчик',
- chk:['Уровни с учётом финишей: паркет ≠ плитка по высоте','Деформационные швы, уход и укрывка после заливки','Фотофиксация трасс до заливки — последний шанс'],
- err:['Один уровень «на глаз» — порог между комнатами','Паркет на сырую стяжку — вздуется через сезон'],
- dim:['Набор прочности ~28 суток · ровнитель 2–5 мм','Образец паркета — ДО стяжки, для расчёта уровня (пирог пола)'],buy:['Образец финишного пола — заранее','Смеси по расчёту площади +10%']},
-{n:'Штукатурка стен и откосов',w:10,d:3,team:'Подрядчик',
- chk:['Углы 90° только там, где встанет корпусная мебель и кухня','Вертикальность по лазеру, откосы и ниши','Высыхание перед маляркой — по толщине слоя'],
- err:['Вывели всё под 90° — бюджет ушёл в стену','Покраска по сырой штукатурке — трещины и пятна'],
- dim:['Слой машинной штукатурки 15–30 мм · сушка ~1 нед на 1 см','Подрозетники и штрабы — после штукатурки, не до'],buy:['Штукатурка по обмеру площадей']},
-{n:'Чистовая электрика и щит',w:13,d:2,team:'Подрядчик',
- chk:['Подрозетники и выводы света по плану расстановки','Щит собран по схеме, группы подписаны','Слаботочка: интернет, ТВ, домофон — не забыть'],
- err:['Коробки «где удобно» — потом не найти','Щит без запаса групп под тёплый пол/полотенцесушитель'],
- dim:['Высота розеток — единый стандарт проекта (обычно 300/900/1150 мм)'],buy:['Щит, автоматика, реле — срок 2–4 нед']},
-{n:'ГКЛ: потолки, короба, ниши',w:13,d:2,team:'Подрядчик',
- chk:['Шаг каркаса 600 мм, два слоя в звуконизолируемых зонах','Закарнизные ниши — по размерам карниза и подсветки','Ревизионные люки — доступ к узлам'],
- err:['Ниша под карниз «на глаз» — штора шуршит по потолку','Один слой ГКЛ в спальне — слышно соседей'],
- dim:['Ниша: ширина карниза + 30–50 мм на ход шторы'],buy:['ГКЛ, профиль, акустическая мембрана']},
-{n:'Мокрые зоны и плитка',w:15,d:3,team:'Подрядчик',
- chk:['Гидроизоляция с заходом на стены 15–20 см, проливка-тест 24 ч','Уклон к трапу 1–2%, раскладка плитки по плану','Керамогранит одной партии, калибр/тон'],
- err:['Плитка до теста гидроизоляции — протечка вскроется поздно','Раскладка «от двери» — обрезки на виду'],
- dim:['Трап — высота = пирог пола + уклон','Запас плитки 7–10% на подрезку'],buy:['Плитка, трапы, инсталяции — срок поставки!']},
-{n:'Окна, подоконники, обмеры дверей и мебели',w:16,d:2,team:'Дизайнер, сторонние поставщики',
- chk:['Обмеры ТОЛЬКО после штукатурки и известной отметки чистого пола','ТЗ на подоконники и откосы — до малярки','Кухня и корпусная мебель — обмер при готовых стенах'],
- err:['Обмер дверей до стяжки — полотно не встанет по высоте','Заказ кухни по «черновым» размерам — щели 5 см'],
- dim:['Производство дверей 30–60 дней · кухни 45–90 дней — заказывать заранее'],buy:['Остекление, двери, мебель — длинные сроки']},
-{n:'Малярные работы и покраска',w:19,d:2,team:'Подрядчик',
- chk:['Выкрасы на объекте при дневном и вечернем свете','Финиш после всех пыльных работ','Слои по технологии: грунт/шпатлёвка/шлифовка'],
- err:['Цвет выбран по экрану — в интерьере другой тон','Покраска до установки дверей — сколы при монтаже'],
- dim:['Колеровка с запасом на подкраски (маркировка банки)'],buy:['Краска по выкрасам, обои, молдинги']},
-{n:'Напольные покрытия',w:21,d:2,team:'Подрядчик',
- chk:['Влажность стяжки/основания — по допуску производителя','Акклиматизация материала 48 ч в помещении','Порожки и примыкания — по узлам проекта'],
- err:['Паркет без деформационных зазоров — «домиком»','Кварцвинил на неровный ровнитель — видны замки'],
- dim:['Зазор паркета 10–15 мм по периметру'],buy:['Паркет/кварцвинил, подложка, плинтус']},
-{n:'Монтаж: электрика, свет, сантехника',w:23,d:1,team:'Дизайнер, сторонние поставщики',
- chk:['Розетки/свет по плану, сценарии света проверяются вечером','Сантехника по техкартам, герметизация стыков','Финальная проверка привязок всех систем'],
- err:['Светильники без закладных — провисают','Смесители до финишной отделки — царапины'],
- dim:['Паспорта и гарантии — в папку объекта'],buy:['Розетки, свет, сантехника — заранее, сроки!']},
-{n:'Двери, мебель, клининг, декор',w:24,d:2,team:'Дизайнер, сторонние поставщики',
- chk:['Двери после финишных покрытий, наличники по стенам','Мебель по уровню, регулировки, фасады','Генеральная уборка до текстиля и декора'],
- err:['Мебель до клининга — пыль в обивке','Текстиль до дверей — зацепы и грязь'],
- dim:['Финальный декор и фотосъёмка — для портфолио (право на съёмку закрепите в договоре)'],buy:['Текстиль, декор, карнизы']}
+var $=function(s,c){return (c||document).querySelector(s)},$$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
+var toastT;function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},2400)}
+function plural(n,a,b,c){var m=n%100;if(m>=11&&m<=14)return c;var d=n%10;if(d===1)return a;if(d>=2&&d<=4)return b;return c}
+var TRACK=localStorage.getItem('shtab_track')||'new';
+function setTrack(t){TRACK=t;localStorage.setItem('shtab_track',t);$$('#fork .fk').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-t')===t)});$('#resNew').classList.remove('on');$('#resPro').classList.remove('on')}
+$('#fork').addEventListener('click',function(e){var b=e.target.closest('.fk');if(b){setTrack(b.getAttribute('data-t'));$('#quiz').scrollIntoView({block:'start'})}});
+setTrack(TRACK);
+var SCOPES={nadzor:[['Координация строительных работ','график, этапность, паузы'],['Работа с подрядчиками','бригада, предписания, приёмки, протоколы'],['Техническая экспертиза','скрытые работы, опрессовка, привязки'],['Документооборот','журнал, акты, версии чертежей'],['Эстетический контроль','реализация = проект']],kompl:[['Поиск материалов и мебели','спецификация, поставщики, образцы'],['Техническая экспертиза','совместимость изделий, техкарты'],['Логистика и хранение','поставки по графику, приёмка'],['Работа с поставщиками','КП, оплаты, рекламации'],['Документооборот и финансы','КП и платёжки в одном месте'],['Риски перерасхода','партия/тон, комплектность']]};
+var ST=[
+{n:'Демонтаж и подготовка',w:1,d:2,team:'Подрядчик',sec:1,ph:['demo-frame.jpg|Демонтаж и каркасы: сверяем с планом перепланировки'],chk:['Демонтаж по плану, несущие не тронуты','Дефектовка стыков/протечек — актом с фото','Несущая или перегородка — только по плану (БТИ/УК)'],err:['Снесли несущее без согласования','Не заметили протечку до старта'],dim:['Дефектовка — в первый день','Износ остекления — проверить на старте'],buy:[]},
+{n:'Разметка и перегородки',w:3,d:2,team:'Подрядчик',ph:['partition-wool.jpg|Пирог перегородки: минвата и каркас по проекту'],chk:['Геометрия по плану','Толщина = конструктив + отделка','Закладные под навесное','Повторный замер после монтажа'],err:['Толщина без отделки — дверь не встаёт','Нет закладных'],dim:['Пазогребень 80–100 · газобетон 100–150 · ГКЛ 75–125 мм','Проём = блок + 10–15 мм/сторона'],buy:['Материал перегородок']},
+{n:'Инженерка в полу',w:5,d:3,team:'Подрядчик',ph:['eng-pipes.jpg|Трассы в стяжке и мембрана: фотофиксация до заливки'],chk:['Опрессовка — актом!','Фотофиксация трасс','Уклон канализации 2–3 см/м','Венттрассы — по проекту высот'],err:['Без опрессовки залили стяжку','Нет фото — нельзя сверлить'],dim:['Коллекторные узлы — доступ','Черновая сантехника/электрика — за 1–2 нед'],buy:[]},
+{n:'Стяжка пола',w:8,d:2,team:'Подрядчик',chk:['Входная дверь — до стяжки','Уровни с учётом финишей','Фото трасс до заливки'],err:['Один уровень «на глаз»','Паркет на сырую стяжку'],dim:['Прочность ~28 сут','Образец паркета — до стяжки'],buy:['Образец пола','Смеси +10%']},
+{n:'Штукатурка',w:10,d:3,team:'Подрядчик',chk:['90° только под мебель','Вертикальность по лазеру','Высыхание по слою'],err:['Всё под 90° — бюджет в стену','Краска по сырой'],dim:['Слой 15–30 мм · сушка ~1 нед/см','Объём — по обмеру +10%'],buy:[]},
+{n:'Чистовая электрика и щит',w:13,d:2,team:'Подрядчик',chk:['Подрозетники по чертежу, оси в линию','Серия в наличии, пересчёт количества','Слаботочный щит — трансформаторы туда','Щит: группы подписаны, напряжение проверено'],err:['Коробки «где удобно»','Щит без запаса групп'],dim:['Розетки 300/900/1150','Щит — срок 2–4 нед'],buy:[]},
+{n:'ГКЛ: потолки, короба',w:13,d:2,team:'Подрядчик',chk:['Каркас 600 мм, 2 слоя ГКЛ в спальнях','Ниши: 150 мм ряд, 200–250 мм два','Люки: коллекторы, ревизии, экраны'],err:['Ниша «на глаз»','Один слой — слышно соседей'],dim:['Ниша: ход шторы + подсветка'],buy:['ГКЛ, профиль, мембрана']},
+{n:'Мокрые зоны и плитка',w:15,d:3,team:'Подрядчик',chk:['Гидроизоляция 15–20 см заход, тест 24 ч','Уклон к трапу 1–2%','Партия/тон/калибр — сверить, фото коробок'],err:['Плитка до теста гидроизоляции','Подрезки < ½ на виду'],dim:['Запас 7–10%','Трап — пирог + уклон'],buy:['Плитка, трапы — сроки!']},
+{n:'Обмеры: окна, двери, мебель',w:16,d:2,team:'Дизайнер, поставщики',chk:['Обмеры после штукатурки и чистого уровня пола','Откосы: ГКЛ/штукатурка/МДФ — заранее','Мебельные чертежи: габариты по факту, зазоры техники, розетки'],err:['Обмер дверей до стяжки','Кухня по черновым размерам'],dim:['Двери 30–60 дн · кухни 45–90 дн'],buy:['Остекление, двери, мебель']},
+{n:'Малярка и покраска',w:19,d:2,team:'Подрядчик',ph:['hero.jpg|Выкрасы при реальном свете','vykrasy-brick.jpg|Выкрасы на кирпиче: подпись, дата, комната','ncs-fan.jpg|Код NCS — в примечания чертежа'],chk:['Выкрасы при дневном и вечернем свете','Тест 3 полосы обоев каждого типа','Молдинги — стыковочный клей','Переход плитка→покраска — профиль/добор'],err:['Цвет по экрану','Покраска до дверей — сколы'],dim:['Колеровка с запасом','Скрытые двери/пенал/теневые — порядок работ'],buy:['Краска, обои, молдинги']},
+{n:'Напольные покрытия',w:21,d:2,team:'Подрядчик',ph:['parquet-bamboo.jpg|Образец бамбука сверяем с полом на объекте'],chk:['Влажность основания по допуску','Акклиматизация 48 ч','Наличник глубже плинтуса'],err:['Паркет без зазоров','Кварцвинил на неровный пол'],dim:['Зазор паркета 10–15 мм'],buy:['Покрытие, подложка, плинтус']},
+{n:'Монтаж: свет, сантехника',w:23,d:1,team:'Дизайнер, поставщики',ph:['ral-fan.jpg|RAL для металла, радиаторов и люков'],chk:['Сценарии света — вечером','Полотенцесушитель: правый нижний угол; вода≠электрика','Конвекторы: мебель не ставить','Бойлер 380 В — проверить мощность','Стопоры дверей'],err:['Светильники без закладных','Схема сушителя не проверена — демонтаж плитки'],dim:['Паспорта — в папку объекта'],buy:['Розетки, свет, сантехника']},
+{n:'Двери, мебель, клининг, декор',w:24,d:2,team:'Дизайнер, поставщики',ph:['fabric-wall.jpg|Ткань у стены будущего интерьера'],chk:['Двери после финишей','15°/45° — стоп; «одним пальцем»; звук; люфт','Зеркала — после мебели','Укрывка до текстиля'],err:['Мебель до клининга','Текстиль до дверей'],dim:['Фотосъёмка — право в договоре'],buy:['Текстиль, декор']}
 ];
-
-const Q=[
+var Q=[
 {t:'Какой у вас объект?',o:['Новостройка (квартира)','Вторичка','Дом / таунхаус','Коммерческое помещение'],k:'obj'},
 {t:'На каком этапе объект сейчас?',o:['Ещё не начинали','Демонтаж / черновые идут','Черновые закончены','Чистовая и монтаж'],k:'stage'},
 {t:'Что входит в ваш договор?',o:['Только дизайн-проект','Проект + авторский надзор','Проект + комплектация','Проект + комплектация + авторский надзор','Договора пока нет 😬'],k:'contract'},
 {t:'Кто строит объект?',o:['Бригада заказчика','Моя проверенная бригада','Моя новая бригада','Заказчик сам / с прорабом'],k:'builder'},
-{t:'Что включить в ваш Excel-файл?',multi:1,o:['График работ (гант по неделям)','Чек-листы приёмки этапов','Чек-лист приёмки закупок','График закупок','Журнал авторского надзора','График платежей'],k:'sheets'},
-{t:'Паспорт проекта — попадёт в шапку таблицы',form:1,k:'pass'}
-];
-const A={sheets:[0,1,2,3,4,5],pass:{name:'',area:'',date:'',des:'',con:''}};
-let qi=0;
-function renderQ(){
-  const q=Q[qi];
-  $('#qStep').textContent=`шаг ${qi+1} / ${Q.length}`;
-  $('#qProg').style.width=(qi/Q.length*100)+'%';
-  $('#qTitle').textContent=q.t;
-  $('#qBack').style.visibility=qi?'visible':'hidden';
-  $('#qNext').innerHTML=qi===Q.length-1?'Приложение к журналу авторского надзора <span class="arr">→</span>':'Далее <span class="arr">→</span>';
-  const box=$('#qOpts');
-  if(q.form){
-    box.className='q-opts q-form';
-    box.innerHTML=`
-      <div class="fld"><label>Название объекта</label><input id="p_name" placeholder="Название и адрес объекта"></div>
-      <div class="fld"><label>Площадь, м²</label><input id="p_area" placeholder="86"></div>
-      <div class="fld"><label>Дата начала работ</label><input id="p_date" type="date"></div>
-      <div class="fld"><label>Дизайнер / бренд</label><input id="p_des" placeholder="Студия …"></div>
-      <div class="fld"><label>Подрядчик</label><input id="p_con" placeholder="Бригада …"></div>`;
-    ['name','area','date','des','con'].forEach(k=>{const el=$('#p_'+k);el.value=A.pass[k];el.addEventListener('input',()=>A.pass[k]=el.value)});
-  }else{
-    box.className='q-opts';
-    box.innerHTML=q.o.map((o,i)=>{
-      const sel=q.multi?A.sheets.includes(i):A[q.k]===i;
-      return `<div class="q-opt${sel?' sel':''}" data-i="${i}"><span class="bx">✓</span>${o}</div>`;
-    }).join('');
-    $$('.q-opt',box).forEach(el=>el.addEventListener('click',()=>{
-      const i=+el.dataset.i;
-      if(q.multi){A.sheets=A.sheets.includes(i)?A.sheets.filter(x=>x!==i):[...A.sheets,i];el.classList.toggle('sel')}
-      else{A[q.k]=i;$$('.q-opt',box).forEach(x=>x.classList.remove('sel'));el.classList.add('sel')}
-    }));
-    if(A[q.k]===undefined&&!q.multi){A[q.k]=0;box.firstChild.classList.add('sel')}
-  }
-}
-$('#qBack').addEventListener('click',()=>{if(qi>0){qi--;renderQ()}});
-$('#qNext').addEventListener('click',()=>{
-  if(qi<Q.length-1){qi++;renderQ();return}
-  buildResults();
-  $('#results').classList.add('on');
-  $('#results').scrollIntoView({behavior:reduced?'auto':'smooth'});
-});
+{t:'Что включить в Excel?',multi:1,o:['График работ (гант)','Чек-листы приёмки этапов','Чек-лист приёмки закупок','График закупок','Журнал авторского надзора','График платежей'],k:'sheets'},
+{t:'Паспорт проекта',form:1,k:'pass'}];
+var A={sheets:[0,1,2,3,4,5],pass:{name:'',area:'',date:'',des:'',con:''}};
+var qi=0;
+function renderQ(){var q=Q[qi];
+$('#qStep').textContent='шаг '+(qi+1)+' / '+Q.length;$('#qProg').style.width=(qi/Q.length*100)+'%';
+$('#qTitle').textContent=q.t;$('#qBack').style.visibility=qi?'visible':'hidden';
+$('#qNext').innerHTML=qi===Q.length-1?'Собрать мой штаб →':'Далее →';
+var box=$('#qOpts');
+if(q.form){box.className='q-opts q-form';box.innerHTML='<div class="fld"><label>Название объекта</label><input id="p_name" placeholder="Адрес / название"></div><div class="fld"><label>Площадь, м²</label><input id="p_area" placeholder="86"></div><div class="fld"><label>Дата начала</label><input id="p_date" type="date"></div><div class="fld"><label>Дизайнер / бренд</label><input id="p_des" placeholder="Студия …"></div><div class="fld"><label>Подрядчик</label><input id="p_con" placeholder="Бригада …"></div>';
+['name','area','date','des','con'].forEach(function(k){var el=$('#p_'+k);el.value=A.pass[k];el.addEventListener('input',function(){A.pass[k]=el.value})});}
+else{box.className='q-opts';box.innerHTML=q.o.map(function(o,i){var sel=q.multi?A.sheets.indexOf(i)>=0:A[q.k]===i;return '<div class="q-opt'+(sel?' sel':'')+'" data-i="'+i+'"><span class="bx">✓</span>'+o+'</div>'}).join('');
+$$('.q-opt',box).forEach(function(el){el.addEventListener('click',function(){var i=+el.getAttribute('data-i');
+if(q.multi){if(A.sheets.indexOf(i)>=0){A.sheets=A.sheets.filter(function(x){return x!==i})}else{A.sheets.push(i)}el.classList.toggle('sel')}
+else{A[q.k]=i;$$('.q-opt',box).forEach(function(x){x.classList.remove('sel')});el.classList.add('sel')}})});
+if(A[q.k]===undefined&&!q.multi){A[q.k]=0;box.firstChild.classList.add('sel')}}}
+$('#qBack').addEventListener('click',function(){if(qi>0){qi--;renderQ()}});
+$('#qNext').addEventListener('click',function(){if(qi<Q.length-1){qi++;renderQ();return}
+if(TRACK==='new'){buildResults();$('#resNew').classList.add('on');$('#resNew').scrollIntoView({block:'start'})}
+else{buildCabinet();$('#resPro').classList.add('on');$('#resPro').scrollIntoView({block:'start'})}});
 renderQ();
-
-function planStages(){
-  const from=[0,2,8,10][A.stage||0];
-  return ST.map((s,i)=>({...s,i})).filter(s=>s.i>=from&&!(s.sec&&A.obj!==1));
-}
-function buildResults(){
-  const plan=planStages();
-  const weeks=plan.reduce((s,p)=>Math.max(s,p.w+p.d),0);
-  const al=[];
-  if(A.contract===4)al.push(['bad','⚠','Нет договора — вся стройка на честном слове. Срочно: договор с этапами, актами и графиком платежей. Без подписанных актов любая претензия заказчика — ваш риск.']);
-  if(A.contract===0||A.contract===2)al.push(['warn','!','Вы без авторского надзора: зафиксируйте письменно, что реализация — зона ответственности подрядчика. Отступления от чертежей — только с вашим письменным согласием, иначе вы не отвечаете за результат.']);
-  if(A.builder===2)al.push(['warn','!','Новая бригада: с первого дня — акты, фотофиксация скрытых работ и письменные предписания. Первую приёмку проводите особенно тщательно, не принимайте «мы всегда так делали».']);
-  if(A.builder===3)al.push(['warn','!','Заказчик строит сам: выдайте памятку о последовательности этапов и письменно снимите с себя ответственность за отступления от проекта.']);
-  if(A.obj===1)al.push(['info','i','Вторичка: начните с дефектовки стыков и протечек — актом с фото, как в реальном графике («соседская протечка»). Это страховка от чужих проблем.']);
-  if((A.stage||0)>=1)al.push(['info','i','Часть этапов пройдена: проверьте «закрытые» работы — фотофиксация скрытых трасс, акты опрессовки и приёмки стяжки/штукатурки. Чего нет на бумаге — того не было.']);
-  $('#alerts').innerHTML=al.map(a=>`<div class="alert ${a[0]}" data-reveal><span class="ic">${a[1]}</span><span>${a[2]}</span></div>`).join('');
-  $$('#alerts [data-reveal]').forEach(el=>el.classList.add('in'));
-  const ORD=['Первый','Второй','Третий','Четвёртый'];
-  $('#resTitle').innerHTML=`${ORD[A.stage||0]} этап · ~${weeks} ${plural(weeks,'неделя','недели','недель')}<br><em>под вашим контролем</em>`;
-  $('#resMeta').textContent=`${plan.length} ${plural(plan.length,'этап','этапа','этапов')} в плане · ${A.pass.name||'объект без названия'} · ${A.pass.area||'—'} м² · старт ${A.pass.date?new Date(A.pass.date).toLocaleDateString('ru-RU'):'—'} · дизайнер: ${A.pass.des||'—'}`;
-  $('#stages').innerHTML=plan.map((s,idx)=>`
-   <article class="stg" data-reveal style="--d:${Math.min(idx*.05,.4)}s">
-     <span class="no">${String(idx+1).padStart(2,'0')}</span>
-     <div>
-       <h3>${s.n}</h3><span class="tm">недели ${s.w}–${s.w+s.d-1} · ${s.team}</span>
-       <div class="stg-cols">
-         <div class="c-chk"><h4>✓ Проверить на приёмке</h4><ul>${s.chk.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-         <div class="c-err"><h4>✕ Частые ошибки</h4><ul>${s.err.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-         <div class="c-buy"><h4>→ Закупки и размеры</h4><ul>${[...s.dim,...s.buy].map(x=>`<li>${x}</li>`).join('')||'<li>—</li>'}</ul></div>
-       </div>
-     </div>
-   </article>`).join('');
-  $$('#stages [data-reveal]').forEach(el=>el.classList.add('in'));
-  const names=[];
-  if(A.sheets.includes(0))names.push('гант');
-  if(A.sheets.includes(1))names.push('чек-листы приёмки');
-  if(A.sheets.includes(2))names.push('приёмка закупок');
-  if(A.sheets.includes(3))names.push('закупки');
-  if(A.sheets.includes(4))names.push('журнал надзора');
-  if(A.sheets.includes(5))names.push('платежи');
-  $('#xlsNote').textContent=`Листы: паспорт проекта, ${names.join(', ')}. Пустые графы — для заполнения на объекте, файл полностью редактируемый.`;
-}
-
-$('#xlsBtn').addEventListener('click',()=>{
-  if(typeof XLSX==='undefined'){toast('Не загрузилась библиотека XLSX — проверьте сеть');return}
-  const plan=planStages(),P=A.pass,wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([
-    ['ШТАБ · приложение к журналу авторского надзора'],[],
-    ['Объект',P.name||'—'],['Площадь, м²',P.area||'—'],
-    ['Дата начала',P.date?new Date(P.date).toLocaleDateString('ru-RU'):'—'],
-    ['Дизайнер',P.des||'—'],['Подрядчик',P.con||'—'],[],
-    ['Составлен',new Date().toLocaleDateString('ru-RU')],[],
-    ['Ведите журнал на каждом выезде. Любые отступления подрядчика от проекта — только через ваши письменные предписания.']
-  ]),'Паспорт');
-  if(A.sheets.includes(0)){
-    const W=26,start=P.date?new Date(P.date):new Date();
-    const head=['№','Наименование работ','Команда','Нед.'];
-    for(let i=0;i<W;i++){const d=new Date(start.getTime()+i*7*864e5);head.push(d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'}))}
-    const rows=plan.map((s,idx)=>{const r=[idx+1,s.n,s.team,s.d];for(let i=0;i<W;i++)r.push(i>=s.w-1&&i<s.w-1+s.d?'▬':'');return r});
-    const ws=XLSX.utils.aoa_to_sheet([head,...rows]);ws['!cols']=[{wch:4},{wch:52},{wch:26},{wch:5}];
-    XLSX.utils.book_append_sheet(wb,ws,'График работ');
-  }
-  if(A.sheets.includes(1)){
-    const rows=[['Этап','Что проверить','Принято (дата/подпись)','Примечание']];
-    plan.forEach(s=>s.chk.forEach((c,i)=>rows.push([i?'':s.n,c,'',''])));
-    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:34},{wch:70},{wch:22},{wch:24}];
-    XLSX.utils.book_append_sheet(wb,ws,'Приёмка');
-  }
-  if(A.sheets.includes(2)){
-    const rows=[['Позиция','Поставщик','Дата приёмки','Кол-во и комплектность','Без повреждений','Документы (накладная, гарантия)','Соответствие проекту/спецификации','Примечание'],
-      ['Плитка / керамогранит — партия, тон','','','','','','',''],
-      ['Паркет / напольные покрытия — тон, партия','','','','','','',''],
-      ['Сантехника, инсталяции — комплектность, сколы','','','','','','',''],
-      ['Свет, электроустановка — цоколь, температура света','','','','','','',''],
-      ['Двери, фурнитура — размер, сторона открывания','','','','','','',''],
-      ['Мебель на заказ — габариты по факту обмера','','','','','','','']];
-    for(let i=0;i<6;i++)rows.push(['','','','','','','','']);
-    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:46},{wch:16},{wch:14},{wch:20},{wch:14},{wch:26},{wch:26},{wch:18}];
-    XLSX.utils.book_append_sheet(wb,ws,'Приёмка закупок');
-  }
-  {
-    const rows=[['Этап','Типичные ошибки','Размеры и нюансы']];
-    plan.forEach(s=>rows.push([s.n,s.err.join(' / '),[...s.dim,...s.buy].join(' / ')]));
-    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:34},{wch:60},{wch:60}];
-    XLSX.utils.book_append_sheet(wb,ws,'Памятка дизайнера');
-  }
-  if(A.sheets.includes(3)){
-    const rows=[['Позиция','К какому этапу','Заказать не позднее','Срок поставки','Поставщик','Статус']];
-    plan.forEach(s=>s.buy.forEach(b=>rows.push([b,s.n,'','','',''])));
-    rows.push(['Образец паркета (расчёт уровня стяжки)','Стяжка','','','','']);
-    rows.push(['Колеровка краски — выкрасы на объекте','Малярка','','','','']);
-    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:46},{wch:26},{wch:20},{wch:14},{wch:20},{wch:12}];
-    XLSX.utils.book_append_sheet(wb,ws,'Закупки');
-  }
-  if(A.sheets.includes(4)){
-    const rows=[['Дата','Помещение','Содержание осмотра','Выявленные отступления','Предписание №','Срок','Исполнитель','Статус','Фото']];
-    rows.push(['01.02.2026','Санузел','Гидроизоляция, проливка-тест','Затёк на стене 15 см — устранить','АН-01','05.02.2026','Подрядчик','в работе','IMG_0231']);
-    for(let i=0;i<14;i++)rows.push(['','','','','','','','','']);
-    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:11},{wch:14},{wch:34},{wch:34},{wch:12},{wch:11},{wch:14},{wch:10},{wch:12}];
-    XLSX.utils.book_append_sheet(wb,ws,'Журнал надзора');
-  }
-  if(A.sheets.includes(5)){
-    const rows=[['Платёж','%','Привязка к этапу','Плановая дата','Факт / сумма'],
-      ['Авансовый',30,'Подписание договора','',''],
-      ['Второй',30,'Приёмка черновых работ (стяжка, штукатурка)','',''],
-      ['Третий',30,'Приёмка готовности под чистовую','',''],
-      ['Четвёртый',10,'Сдача объекта, подписание акта','','']];
-    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:14},{wch:6},{wch:48},{wch:14},{wch:16}];
-    XLSX.utils.book_append_sheet(wb,ws,'Платежи');
-  }
-  XLSX.writeFile(wb,`ШТАБ_Приложение_АН_${(P.name||'объект').replace(/[«»\s]+/g,'_').slice(0,30)}.xlsx`);
-  toast('Файл .xlsx сохранён — ведите на объекте');
-});
-
-function acc(host,items){
-  host.innerHTML=items.map((it,i)=>`
-   <div class="acc-i"><button class="acc-q"><span><span class="n">${String(i+1).padStart(2,'0')}</span><span class="t">${it.t}</span></span><span class="pl">+</span></button>
-   <div class="acc-a"><div>${it.body}</div></div></div>`).join('');
-  host.addEventListener('click',e=>{
-    const q=e.target.closest('.acc-q');if(!q)return;
-    const it=q.parentElement,was=it.classList.contains('open');
-    $$('.acc-i',host).forEach(x=>x.classList.remove('open'));
-    if(!was)it.classList.add('open');
-  });
-}
-acc($('#baseAcc'),ST.map(s=>({t:s.n,body:`<div class="acc-body">
-  <div><h5 style="color:var(--ok)">✓ приёмка</h5><ul>${s.chk.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-  <div><h5 style="color:var(--bad)">✕ ошибки</h5><ul>${s.err.map(x=>`<li>${x}</li>`).join('')}</ul></div>
-  <div><h5 style="color:var(--brz)">→ размеры и закупки</h5><ul>${[...s.dim,...s.buy].map(x=>`<li>${x}</li>`).join('')||'<li>—</li>'}</ul></div>
-</div>`})));
-</script>
-</body>
-</html>
+function planStages(){var from=[0,2,8,10][A.stage||0];return ST.map(function(s,i){var o={};for(var k in s)o[k]=s[k];o.i=i;return o}).filter(function(s){return s.i>=from&&!(s.sec&&A.obj!==1)})}
+function scopeList(x){return '<ul>'+x.map(function(y){return '<li style="padding:6px 0;border-top:1px solid var(--line);font-size:16px"><b>'+y[0]+'</b> <span style="color:var(--ink2)">— '+y[1]+'</span></li>'}).join('')+'</ul>'}
+function buildResults(){var plan=planStages();var weeks=plan.reduce(function(s,p){return Math.max(s,p.w+p.d)},0);
+$('#gloss').classList.toggle('on',TRACK==='new');
+var al=[];
+if(A.contract===4)al.push(['bad','⚠','Нет договора — срочно договор с этапами, актами и графиком платежей.']);
+if(A.contract===0||A.contract===2)al.push(['warn','!','Без надзора: реализация — зона подрядчика; отступления — только с вашим письменным согласием.']);
+if(A.builder===2)al.push(['warn','!','Новая бригада: акты, фото скрытых работ, предписания с первого дня.']);
+if(A.builder===3)al.push(['warn','!','Заказчик строит сам: памятка + письменно снимите с себя ответственность за отступления.']);
+if(A.obj===1)al.push(['info','i','Вторичка: дефектовка стыков и протечек — актом с фото.']);
+if((A.stage||0)>=1)al.push(['info','i','Часть этапов пройдена: проверьте скрытые трассы, опрессовку, приёмки. Чего нет на бумаге — того не было.']);
+$('#alerts').innerHTML=al.map(function(a){return '<div class="alert '+a[0]+'"><span class="ic">'+a[1]+'</span><span>'+a[2]+'</span></div>'}).join('');
+var hasN=[1,3,4].indexOf(A.contract)>=0,hasK=[2,3,4].indexOf(A.contract)>=0;var rs='';
+if(A.contract===4)rs='<h3>Зона ответственности — зафиксируйте в договоре</h3><div style="margin-top:8px"><b style="font-size:13px">Авторский надзор</b>'+scopeList(SCOPES.nadzor)+'<b style="font-size:13px">Комплектация</b>'+scopeList(SCOPES.kompl)+'</div>';
+else if(A.contract===0)rs='<h3>Ваша зона по договору</h3><p class="sub" style="margin-top:6px">Только дизайн-проект. Надзор и комплектация — зона роста и риска.</p>';
+else{var c=[];if(hasN)c.push('<b style="font-size:13px">Авторский надзор — вы взяли</b>'+scopeList(SCOPES.nadzor));if(hasK)c.push('<b style="font-size:13px">Комплектация — вы взяли</b>'+scopeList(SCOPES.kompl));rs='<h3>Ваша зона ответственности</h3><div style="margin-top:8px">'+c.join('')+'</div>'}
+$('#resScopes').innerHTML=rs;
+var ORD=['Первый','Второй','Третий','Четвёртый'];
+$('#resTitle').textContent=ORD[A.stage||0]+' этап · ~'+weeks+' '+plural(weeks,'неделя','недели','недель')+' под вашим контролем';
+$('#resMeta').textContent=plan.length+' '+plural(plan.length,'этап','этапа','этапов')+' · '+(A.pass.name||'объект')+' · '+(A.pass.area||'—')+' м² · дизайнер: '+(A.pass.des||'—');
+$('#stages').innerHTML=plan.map(function(s,idx){var ph=(s.ph||[]).map(function(p){var f=p.split('|');return '<div class="scheme"><img src="images/'+f[0]+'" alt="'+f[1]+'" loading="lazy" onerror="this.parentNode.style.display=\'none\'"><div class="sch-cap">'+f[1]+'</div></div>'}).join('');
+return '<article class="stg"><span class="no">'+('0'+(idx+1)).slice(-2)+'</span><h3>'+s.n+'</h3><span class="tm">недели '+s.w+'–'+(s.w+s.d-1)+' · '+s.team+'</span>'+ph+'<div class="stg-cols"><div class="c-chk"><h4>Приёмка</h4><ul>'+s.chk.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul></div><div class="c-err"><h4>Ошибки</h4><ul>'+s.err.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul></div><div class="c-buy"><h4>Закупки и размеры</h4><ul>'+s.dim.concat(s.buy).map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul></div></div></article>'}).join('');
+var names=[];if(A.sheets.indexOf(0)>=0)names.push('гант');if(A.sheets.indexOf(1)>=0)names.push('чек-листы');if(A.sheets.indexOf(2)>=0)names.push('приёмка закупок');if(A.sheets.indexOf(3)>=0)names.push('закупки');if(A.sheets.indexOf(4)>=0)names.push('журнал');if(A.sheets.indexOf(5)>=0)names.push('платежи');
+var note='Листы: паспорт, объём работы, '+names.join(', ')+'. Редактируемый.';$('#xlsNote').textContent=note;$('#xlsNote2').textContent=note;}
+function buildCabinet(){var P=A.pass;var plan=planStages();var start=P.date?new Date(P.date):new Date();
+var key='shtab_cab_'+(P.name||'obj');var st={};try{st=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){}
+var evs=plan.map(function(s,i){return {i:i,d:new Date(start.getTime()+(s.w-1)*7*864e5),t:s.n}});
+evs.push({i:99,d:new Date(start.getTime()+24*7*864e5),t:'Финальная приёмка и сдача'});
+$('#cabMeta').textContent=(P.name||'объект')+' · '+(P.area||'—')+' м² · дизайнер: '+(P.des||'—')+' · 1-й проект бесплатно';
+$('#calList').innerHTML=evs.map(function(e){var s=st[e.i]||{};return '<div class="cal-row"><input type="checkbox" data-i="'+e.i+'" '+(s.done?'checked':'')+'><span class="cal-date">'+e.d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'})+'</span><div style="flex:1">'+e.t+'<input class="cal-note" data-n="'+e.i+'" placeholder="заметка / ссылка на папку" value="'+(s.note||'')+'"></div></div>'}).join('');
+$('#calList').onchange=function(e){var c=e.target.closest('input[type=checkbox]');if(c){st[c.getAttribute('data-i')]=Object.assign({},st[c.getAttribute('data-i')],{done:c.checked});localStorage.setItem(key,JSON.stringify(st))}};
+$('#calList').oninput=function(e){var n=e.target.closest('.cal-note');if(n){st[n.getAttribute('data-n')]=Object.assign({},st[n.getAttribute('data-n')],{note:n.value});localStorage.setItem(key,JSON.stringify(st))}};
+if(!st.folders)st.folders=['Альбом дизайна интерьера','Фотографии','Документы'];
+var rf=function(){$('#foldList').innerHTML=st.folders.map(function(f){return '<li>'+f+'<span>0 файлов · загрузка в полной версии</span></li>'}).join('')};rf();
+$('#foldAdd').onclick=function(){var n=prompt('Название папки');if(n){st.folders.push(n);localStorage.setItem(key,JSON.stringify(st));rf()}};
+$('#expBtn').onclick=function(){var blob=new Blob([JSON.stringify(st,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='shtab-export.json';a.click();URL.revokeObjectURL(a.href);toast('Штаб экспортирован — пришлите файл нам для анализа')};
+$('#impBtn').onclick=function(){$('#impFile').click()};
+$('#impFile').onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{st=JSON.parse(r.result);localStorage.setItem(key,JSON.stringify(st));toast('Импортировано');buildCabinet()}catch(_){toast('Файл не распознан')}};r.readAsText(f)};
+$$('.accsw').forEach(function(s){s.onchange=function(){toast('Ссылки для доступа появятся после регистрации (полная версия)')}});}
+function exportXLSX(){if(typeof XLSX==='undefined'){toast('Не загрузилась библиотека XLSX');return}
+var plan=planStages(),P=A.pass,wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['ШТАБ · приложение к журналу авторского надзора'],[],['Объект',P.name||'—'],['Площадь, м²',P.area||'—'],['Дата начала',P.date?new Date(P.date).toLocaleDateString('ru-RU'):'—'],['Дизайнер',P.des||'—'],['Подрядчик',P.con||'—'],[],['Отступления подрядчика — только через ваши письменные предписания.']]),'Паспорт');
+(function(){var rows=[['АВТОРСКИЙ НАДЗОР — объём работы'],['']];SCOPES.nadzor.forEach(function(x){rows.push([x[0],x[1]])});rows.push([''],['КОМПЛЕКТАЦИЯ — объём работы'],['']);SCOPES.kompl.forEach(function(x){rows.push([x[0],x[1]])});var ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:40},{wch:70}];XLSX.utils.book_append_sheet(wb,ws,'Объём работы')})();
+if(A.sheets.indexOf(0)>=0){var W=26,start=P.date?new Date(P.date):new Date();var head=['№','Работы','Команда','Нед.'];for(var i=0;i<W;i++)head.push(new Date(start.getTime()+i*7*864e5).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'}));var rows=plan.map(function(s,x){var r=[x+1,s.n,s.team,s.d];for(var j=0;j<W;j++)r.push(j>=s.w-1&&j<s.w-1+s.d?'▬':'');return r});var ws=XLSX.utils.aoa_to_sheet([head].concat(rows));ws['!cols']=[{wch:4},{wch:50},{wch:24},{wch:5}];XLSX.utils.book_append_sheet(wb,ws,'График работ')}
+if(A.sheets.indexOf(1)>=0){var rows=[['Этап','Что проверить','Принято','Примечание']];plan.forEach(function(s){s.chk.forEach(function(c,i){rows.push([i?'':s.n,c,'',''])})});var ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:32},{wch:70},{wch:20},{wch:22}];XLSX.utils.book_append_sheet(wb,ws,'Приёмка')}
+if(A.sheets.indexOf(2)>=0){var rows=[['Позиция','Поставщик','Дата','Комплектность','Без повреждений','Документы','Соответствие','Примечание'],['Плитка — партия, тон','','','','','','',''],['Паркет — тон, партия','','','','','','',''],['Сантехника — комплектность','','','','','','',''],['Свет — цоколь, t света','','','','','','',''],['Двери — размер, сторона','','','','','','',''],['Мебель — по факту обмера','','','','','','','']];var ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:44},{wch:14},{wch:12},{wch:16},{wch:14},{wch:22},{wch:22},{wch:16}];XLSX.utils.book_append_sheet(wb,ws,'Приёмка закупок')}
+(function(){var rows=[['Этап','Ошибки','Размеры и нюансы']];plan.forEach(function(s){rows.push([s.n,s.err.join(' / '),s.dim.concat(s.buy).join(' / ')])});var ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:32},{wch:58},{wch:58}];XLSX.utils.book_append_sheet(wb,ws,'Памятка')})();
+if(A.sheets.indexOf(3)>=0){var rows=[['Позиция','К этапу','Заказать до','Срок','Поставщик','Статус']];plan.forEach(function(s){s.buy.forEach(function(b){rows.push([b,s.n,'','','',''])})});var ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:44},{wch:24},{wch:16},{wch:12},{wch:18},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'Закупки')}
+if(A.sheets.indexOf(4)>=0){var rows=[['Дата','Помещение','Осмотр','Отступления','Предписание','Срок','Исполнитель','Статус','Фото']];rows.push(['01.02.2026','Санузел','Гидроизоляция, тест','Затёк 15 см','АН-01','05.02.2026','Подрядчик','в работе','IMG_0231']);for(var i=0;i<10;i++)rows.push(['','','','','','','','','']);var ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:10},{wch:12},{wch:32},{wch:32},{wch:11},{wch:10},{wch:12},{wch:9},{wch:10}];XLSX.utils.book_append_sheet(wb,ws,'Журнал надзора')}
+if(A.sheets.indexOf(5)>=0){var rows=[['Платёж','%','Привязка','Дата','Факт'],['Авансовый',30,'Договор','',''],['Второй',30,'Черновые приняты','',''],['Третий',30,'Готовность под чистовую','',''],['Четвёртый',10,'Сдача, акт','','']];var ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:12},{wch:5},{wch:44},{wch:12},{wch:14}];XLSX.utils.book_append_sheet(wb,ws,'Платежи')}
+XLSX.writeFile(wb,'ШТАБ_'+(P.name||'объект').replace(/[«»\s]+/g,'_').slice(0,30)+'.xlsx');toast('Файл .xlsx сохранён');}
+$$('.xlsbtn').forEach(function(b){b.addEventListener('click',exportXLSX)});
+$$('.wl').forEach(function(f){f.addEventListener('submit',function(e){e.preventDefault();
+try{var l=JSON.parse(localStorage.getItem('shtab_waitlist')||'[]');var i=f.querySelectorAll('input');l.push({n:i[0].value,m:i[i.length-1].value,d:new Date().toISOString()});localStorage.setItem('shtab_waitlist',JSON.stringify(l))}catch(_){}
+toast('Вы в списке — сообщим о запуске');f.reset();})});
+var TEST=[
+{q:'ТЗ зафиксировано письменно: ожидания, «безлимиты» и ЛПР определены до старта.',tip:'Бриф-анкета под подпись; безлимиты и ЛПР — в договоре (этап 1).'},
+{q:'Замеры — 3D-сканером, после сложного демонтажа — повторный замер.',tip:'Только 3D-сканер; повторный замер после демонтажа; доплата за правки (этап 2).'},
+{q:'Клиент понял планировку (3D с тенями), число правок согласовано заранее.',tip:'Люкс: безлимит в цене; обзор планировки на объекте с макетами стен (этап 3).'},
+{q:'Финальные материалы согласованы в 3D до визуализаций, бюджет правок заложен.',tip:'Два этапа концепта: до и после выбора материалов; часть правок — ИИ (этап 5).'},
+{q:'Бригада подтвердила под подпись: «чертежи понятны и достаточны».',tip:'Клиенту — 3D-схемы; изучить чертежи бригады, счёт за детализацию (этап 6).'},
+{q:'Приёмка поставок — под подпись: кто проверил, принял, рекламация, хранение.',tip:'Визуальное — дизайнер, техническое — специалист; «поставщики клиента» — под контролем (этап 7).'},
+{q:'Приёмка изделий на объекте закреплена за прорабом; частота выездов — в договоре.',tip:'Дизайнер не принимает изделия днём; 1 выезд/нед на финале — мало (этап 8).'},
+{q:'Конфликты — в изолированном чате или протоколом с отметками о прочтении.',tip:'Рамки до начала стройки; протоколы с поиском по датам и отчётом о решении (этап 9).'},
+{q:'Журнал надзора, фото скрытых работ и акты — в одном месте, доступны команде.',tip:'Автоматизация журнала; единое хранение и доступ к документам (этап 10).'},
+{q:'Брак фиксируется фото/видео с датой и сроком; эскалация: 3 дня тишины → претензия.',tip:'Рекламация в 2 экземплярах, подписи с расшифровками; скан — поставщику и клиенту.'},
+{q:'После проекта сделана ретроспектива: дорогие и повторяющиеся ошибки — в чек-листы.',tip:'Люкс: менеджер + комплектатор + ответственный за документооборот (этап 11).'}];
+var ti=0,tAns=[];
+function renderTest(){var box=$('#testBox');
+if(ti<TEST.length){
+box.innerHTML='<div class="q-top"><span>контрольная точка '+(ti+1)+' / '+TEST.length+'</span><span>1 — совсем нет · 5 — всегда</span></div><div class="q-prog"><i style="width:'+(ti/TEST.length*100)+'%"></i></div><div class="t-q">'+TEST[ti].q+'</div><div class="t-btns">'+[1,2,3,4,5].map(function(v){return '<button data-v="'+v+'">'+v+'</button>'}).join('')+'</div>';
+$$('.t-btns button',box).forEach(function(b){b.addEventListener('click',function(){tAns.push(+b.getAttribute('data-v'));ti++;renderTest()})});
+}else{
+var sum=tAns.reduce(function(a,b){return a+b},0),pct=Math.round(sum/(TEST.length*5)*100);
+var tier=pct>=75?['Спокойный контроль','Вы управляете стройкой, а не она вами. Держите ритм и не бросайте бумажную фиксацию.']:pct>=45?['Уверенная середина','База есть, но остались дыры, через которые прилетают пожары. Три слабых места — ниже.']:['Режим «тушить пожары»','Большая часть рисков не зафиксирована на бумаге. Начните с трёх пунктов ниже — они дешевле всего исправляются сейчас.'];
+var weak=TEST.map(function(t,i){return {i:i,v:tAns[i]}}).sort(function(a,b){return a.v-b.v}).slice(0,3);
+box.innerHTML='<div class="q-top"><span>ваш ШТАБ-индекс</span><span>'+sum+' / '+(TEST.length*5)+'</span></div><div class="t-score">'+pct+'% · '+tier[0]+'</div><div class="t-tier">'+tier[1]+'</div><h3>Три точки роста</h3><ul class="t-weak">'+weak.map(function(w){return '<li><b>'+TEST[w.i].q+'</b><span>Совет: '+TEST[w.i].tip+'</span></li>'}).join('')+'</ul><button class="btn small" id="tAgain">Пройти ещё раз</button>';
+$('#tAgain').addEventListener('click',function(){ti=0;tAns=[];renderTest()});}}
+renderTest();
+function acc(host,items){host.innerHTML=items.map(function(it,i){return '<div class="acc-i"><button class="acc-q"><span><span class="n">'+(it.n||('0'+(i+1)).slice(-2))+'</span><span class="t">'+it.t+'</span></span><span class="pl">+</span></button><div class="acc-a"><div>'+it.body+'</div></div></div>'}).join('');
+host.addEventListener('click',function(e){var q=e.target.closest('.acc-q');if(!q)return;var it=q.parentElement,was=it.classList.contains('open');$$('.acc-i',host).forEach(function(x){x.classList.remove('open')});if(!was)it.classList.add('open')})}
+function L(x){return '<ul>'+x.map(function(y){return '<li>'+y+'</li>'}).join('')+'</ul>'}
+function SCH(f,a){return '<div class="scheme"><img src="images/'+f+'" alt="'+a+'" loading="lazy" onerror="this.parentNode.style.display=\'none\'"></div>'}
+acc($('#acc0'),[{n:'00',t:'Этап 0 · Вход на объект',body:'<div class="acc-body"><div><h5>До старта</h5>'+L(['Договор + «объём работы» приложением','Два чата: клиент (без прораба) и прораб (без клиента) + правила чатов','Первая встреча: экскурсия по чертежам, прораб подтверждает «чертежи понятны и достаточны»','Журнал надзора на объекте; график работ распечатать в журнал','Правила приёмки — прорабу под подпись'])+'</div></div>'}]);
+acc($('#baseAcc'),ST.map(function(s){return {t:s.n,body:'<div class="acc-body"><div><h5>Приёмка</h5>'+L(s.chk)+'</div><div><h5>Ошибки</h5>'+L(s.err)+'</div><div><h5>Размеры и закупки</h5>'+L(s.dim.concat(s.buy))+'</div></div>'}}));
+acc($('#accAcc'),[
+{t:'Плитка: приёмка',body:'<div class="acc-body"><div>'+SCH('scheme-plitka.png','Схема приёмки плитки')+L(['Доставка: упаковка, тон/калибр, фото коробок','До укладки: раскладка, 45° внешние углы, паттерны не рядом, ниша 8×8, без «конверта»','Пол → разрешение на стены','Приёмка: правило 2 м, швы, простукивание, затирка; эпоксидка — смыта в день укладки'])+'</div></div>'},
+{t:'Стены: приёмка',body:'<div class="acc-body"><div>'+SCH('scheme-steny.png','Схема приёмки стен')+L(['До штукатурки: предупредить о приёмке (прораб, правило, лампа), 90° под мебель, фото скрытых работ — иначе не принято','После штукатурки: правило горизонталь/вертикаль/диагональ, маяки вынуты','После шпаклёвки: боковой свет — без песчинок и рытвин','Тест 3 полосы обоев; молдинги — стыковочный клей','Смежник: ТЗ → приёмка подготовки → акт передачи → укрывка'])+'</div></div>'},
+{t:'Электрика: приёмка',body:'<div class="acc-body"><div>'+SCH('scheme-electrika.png','Схема приёмки электрики')+L(['Проект кухни — электрику до старта','Колонна стиральная+сушильная: розетки ~1800 мм','Не по ходу откатной двери; выключатели со стороны ручки','Подрозетники: по чертежу, оси в линию, пересчёт, серия в наличии, щит','Щит: напряжение проверено, группы подписаны; терморегулятор — отдельный пост'])+'</div></div>'},
+{t:'Двери: приёмка',body:'<div class="acc-body"><div>'+SCH('scheme-dveri.png','Схема приёмки дверей')+L(['До штукатурки: ТЗ проёмов от замерщика','Перед финишем: повторный замер','Распаковка при мастере: сколы, геометрия правилом, ручки','После: наличники без зазоров; 15°/45° стоп; «одним пальцем»; звук; люфт','Брак → рекламационный акт: 2 подписи с расшифровками, дата, скан поставщику и клиенту'])+'</div></div>'}]);
+var DOCS=[
+{t:'Возврат бракованного товара (физлицо)',when:'Дефект при распаковке: возврат товара и денег, включая доставку (ст. 18, 26.1 ЗоЗПП).',h:'<p>Кому: ____ (продавец)</p><p>От кого: ____ (ФИО, контакты)</p><p><b>ДОСУДЕБНАЯ ПРЕТЕНЗИЯ</b></p><p>«__» ____ 20__ г. приобретён товар: ____, заказ № __, стоимость __, оплачен полностью. Доставка «__» ____ 20__ г., ТК ____.</p><p>При распаковке обнаружены недостатки: ____. Зафиксированы фото/видео (при свидетелях: ____). Заводская упаковка неповреждена — повреждение после передачи исключено.</p><p>На основании ст. 18 и 26.1 ЗоЗПП ТРЕБУЮ принять товар и вернуть сумму и расходы на доставку в течение 10 дней (ст. 22 ЗоЗПП). Реквизиты: ____.</p><p>При отказе — суд: убытки, моральный вред (ст. 13–15), штраф 50% (п. 6 ст. 13 ЗоЗПП).</p><p>Приложения: платёжный документ; документы доставки; фото.</p><p>«__» ____ 20__ г. ____ /ФИО/</p>'},
+{t:'Брак товара и монтажа (физлицо)',when:'После установки дефекты изделия/монтажа: замена или устранение (ст. 18, 29 ЗоЗПП).',h:'<p>Кому: ____</p><p>От кого: ____</p><p><b>ДОСУДЕБНАЯ ПРЕТЕНЗИЯ</b></p><p>«__» ____ 20__ г. договор № ____ на покупку и установку: ____. Оплата полностью. Монтаж «__» ____ 20__ г.</p><p>Выявлены недостатки: ____ (геометрия, дребезжание, крепёж, уплотнитель, царапины).</p><p>Первичное обращение с фото/видео от «__» ____ 20__ г.; ответ о сроках не получен.</p><p>На основании ст. 18 (и ст. 29) ЗоЗПП ТРЕБУЮ заменить товар и/или безвозмездно устранить недостатки.</p><p>При отказе — суд, штраф 50% (п. 6 ст. 13 ЗоЗПП).</p><p>Приложения: договор; оплата; фото; видео; копия обращения.</p><p>«__» ____ 20__ г. ____ /ФИО/</p>'},
+{t:'Срыв срока предоплаченного товара (B2B)',when:'Юрлицо оплатило, товар не отгружен: отгрузка или возврат + проценты (ст. 487, 395 ГК).',h:'<p>Кому: ____</p><p>От кого: ____</p><p><b>ДОСУДЕБНАЯ ПРЕТЕНЗИЯ</b></p><p>«__» ____ 20__ г. договор № ____ (заказ № ____) на поставку: ____. Оплата 100% «__» ____ 20__ г. (п/п № __).</p><p>Срок поставки: до «__» ____ 20__ г. (письмо сотрудника/оферта — скриншоты). Товар не отгружен.</p><p>На основании п. 3 ст. 487 ГК ТРЕБУЮ в течение __ дней отгрузить товар ЛИБО вернуть предоплату.</p><p>Также проценты по п. 1 ст. 395 ГК — по ключевой ставке ЦБ за соответствующие периоды с «__» ____ 20__ г. по день возврата.</p><p>Реквизиты: ____. При отказе — арбитражный суд.</p><p>Приложения: счёт; п/п; переписка о сроках.</p><p>Должность ____ /подпись/ ФИО</p>'},
+{t:'Обмен товара до отгрузки (смена обстоятельств)',when:'После оплаты товар нельзя использовать (нет стояка/мощности), отгрузки не было: замена или приостановка.',h:'<p>Кому: ____</p><p>От кого: ____</p><p><b>ЗАЯВЛЕНИЕ (об обмене / приостановке)</b></p><p>«__» ____ 20__ г. по счёту № ____ оплачен товар: ____ на сумму ____. Товар не отгружен.</p><p>Выявлены обстоятельства, исключающие использование по назначению: ____ (нет стояка; нет мощности 380 В; не те габариты).</p><p>ПРОШУ: 1) заменить ____ на аналог с перерасчётом (разницу доплачу); 2) при необходимости приостановить заказ до выбора замены.</p><p>Основание: ст. 25 и 26.1 ЗоЗПП; для юрлиц — ст. 450 ГК.</p><p>Ответ — письменно до «__» ____ 20__ г.</p><p>Приложения: оплата; характеристики; документы об ограничениях.</p><p>«__» ____ 20__ г. ____ /ФИО/</p>'}];
+$('#docsList').innerHTML=DOCS.map(function(d,i){return '<div class="card"><b>'+d.t+'</b><p class="when">'+d.when+'</p><button class="btn small" data-d="'+i+'">⬇ Скачать (.doc)</button></div>'}).join('');
+$('#docsList').addEventListener('click',function(e){var b=e.target.closest('button[data-d]');if(!b)return;var d=DOCS[+b.getAttribute('data-d')];var blob=new Blob(['\ufeff<html><head><meta charset="utf-8"></head><body>',d.h,'</body></html>'],{type:'application/msword'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Pretenziya_'+(+b.getAttribute('data-d')+1)+'.doc';a.click();URL.revokeObjectURL(a.href);toast('Шаблон скачан')});
+var CASES=[
+{tag:'товар · физлицо',t:'Кресло: дефект при распаковке',p:'Фото/видео в день распаковки при свидетелях; аргумент «упаковка цела — транспорт исключён»; ст. 18+26.1 ЗоЗПП; срок и штраф 50%. Урок: приёмка поставки — в день доставки.'},
+{tag:'товар + монтаж',t:'Скрытые двери: 5 дефектов',p:'Чек-лист: геометрия, звук, крепёж, уплотнитель, ручки; первое письмо с фото; молчание → претензия ст. 18 ЗоЗПП. Урок: письменная фиксация каждого обращения.'},
+{tag:'срок · B2B',t:'Мебель: срок сорван',p:'Срок — письменно (скриншоты); п. 3 ст. 487 ГК + ст. 395 по ключевой ставке (не «0,02%»); клиенту — письмо о смещении графика ремонта. Урок: сроки только письменно.'},
+{tag:'обмен · до отгрузки',t:'Полотенцесушитель: нет стояка, 380 В не согласовать',p:'Заявление об обмене (вода→электрика, доплата) и приостановке заказа. Урок: техвозможности (стояк, мощность) проверяются на этапе дизайна — это пункты чек-листов ШТАБа.'}];
+$('#casesList').innerHTML=CASES.map(function(c){return '<div class="card case"><span class="tag">'+c.tag+'</span><b>'+c.t+'</b><p>'+c.p+'</p></div>'}).join('');
+var DOCS2=[
+{t:'Договор авторского надзора — каркас',when:'Предмет-услуги, лимиты, оплата, приёмка, ограничение ответственности, агентский блок.',h:'<p><b>ДОГОВОР АВТОРСКОГО НАДЗОРА — каркас для сборки с юристом</b></p><p>1. Предмет: возмездные услуги (процесс, а не результат) по приложению «Объём работы».</p><p>2. Порядок оказания: график выездов, журнал надзора, отчёты; SLA чата (сроки ответа).</p><p>3. Лимиты и допуслуги: не более __ выездов/мес; всё вне приложения — платно по прайсу.</p><p>4. Оплата: предоплата месяца; просрочка → приостановка услуг (ст. 328 ГК) без ответственности исполнителя.</p><p>5. Приёмка: ежемесячный акт; 5 раб. дней на мотивированные возражения, иначе услуги приняты; односторонний акт при уклонении.</p><p>6. Обязанности заказчика: доступ на объект; вовлечённость подрядчика (приёмки, предписания); своевременные решения — иначе сроки сдвигаются соразмерно.</p><p>7. Ограничение ответственности: проверка визуальная; исполнитель не отвечает за действия подрядчика и скрытые работы; ответственность ограничена стоимостью услуг за месяц.</p><p>8. Изменения заказчика (change-order) — платно, сроки сдвигаются.</p><p>9. Агентский блок (если есть закупка): отчёт агента, возмещение расходов, вознаграждение (гл. 52 ГК).</p><p>10. Интеллектуальная собственность: журнал, отчёты, протоколы — ИС исполнителя; право публиковать реализованный интерьер.</p><p>11. Переписка по реквизитам — юридически значимая (ст. 165.1 ГК). 12. Споры: претензия 10–15 дней, затем суд.</p>'},
+{t:'Приложение-прайс к договору надзора',when:'Градации услуг и лимиты: от чата до надзора с закупкой; всё вне списка — допуслуги.',h:'<p><b>ПРИЛОЖЕНИЕ №__ к договору №__ от __.__.20__ г. Состав и стоимость услуг</b></p><p>1. Чат с дизайнером (консультации по чертежам и материалам; SLA __ ч) — ____ руб./мес.</p><p>2. Авторский надзор (не более __ выездов/мес): консультации на объекте, визуальная проверка соответствия чертежам, журнал надзора, отчёты по e-mail — ____ руб./мес. Выезд сверх лимита — ____ руб.</p><p>3. Авторский надзор с комплектацией: п. 2 + подбор товара «цена-качество» (из 2 компаний), запрос КП и счетов, поездки по магазинам — ____ руб./мес.</p><p>4. Авторский надзор с комплектацией и закупкой (агент): п. 3 + закупка от лица заказчика, заключение договоров, оплата, приёмка товара на объекте, отчёты о закупках, организация возврата/замены — ____ руб./мес + агентское вознаграждение __% и возмещение подтверждённых расходов.</p><p>5. Выезд на объект до 50 км от КАД — ____ руб.; 51–100 км — ____ руб.</p><p>6. Поездка дизайнера с заказчиком по магазинам (до 4 ч) — ____ руб./выезд.</p><p>7. Технический надзор (выезд техспециалиста: контроль технологий, экспертиза недостатков) — ____ руб./выезд; в авторский надзор не входит.</p><p>8. Услуги, не перечисленные в приложении, — дополнительные, оплачиваются по прайсу исполнителя по отдельному согласованию.</p>'},
+{t:'Акт сдачи-приёмки услуг надзора',when:'Ежемесячный акт с оговоркой об односторонней приёмке при уклонении.',h:'<p><b>АКТ №__ сдачи-приёмки оказанных услуг за __________ 20__ г.</b></p><p>к договору №____ от «__» ____ 20__ г. г. ____________</p><p>Исполнитель оказал, а заказчик принял услуги согласно приложению «Объём работы»: ____________________.</p><p>Всего выполнено работ на сумму: ______ руб. НДС не облагается / НДС ______.</p><p>Услуги оказаны полностью, в срок и надлежащего качества; заказчик претензий по объёму, качеству и срокам не имеет.</p><p>При неподписании заказчиком мотивированных возражений в течение __ раб. дней услуги считаются принятыми, акт действителен в одностороннем порядке.</p><p>Подписи сторон: Исполнитель ____ /____/ Заказчик ____ /____/</p>'}];
+$('#docs2').innerHTML=DOCS2.map(function(d,i){return '<div class="card"><b>'+d.t+'</b><p class="when">'+d.when+'</p><button class="btn small" data-d2="'+i+'">⬇ Скачать шаблон (.doc)</button></div>'}).join('');
+$('#docs2').addEventListener('click',function(e){var b=e.target.closest('button[data-d2]');if(!b)return;var d=DOCS2[+b.getAttribute('data-d2')];var blob=new Blob(['\ufeff<html><head><meta charset="utf-8"></head><body>',d.h,'</body></html>'],{type:'application/msword'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Shablon_'+(+b.getAttribute('data-d2')+1)+'.doc';a.click();URL.revokeObjectURL(a.href);toast('Шаблон скачан')});
+var SUP=[
+['Плитка','Плиткозавр','','адрес и сайт уточните'],
+['Плитка','Квинтэссенция интерьера','vs25.ru','Кожевенная линия, 30'],
+['Плитка','Antica','antica-ceramica.ru','Большой пр. В.О., 97'],
+['Плитка','Арт Грес','artgres.net','Artplay + Литейный, 26'],
+['Плитка','Эстима','estima.ru','пр. Энергетиков, 10'],
+['Плитка','Кафельбург','kafelburg.ru','пр. Обуховской Обороны, 89'],
+['Свет','Центрсвет','centrsvet.ru','Artplay, Красногвардейская пл., 3'],
+['Свет','СВ Групп','sw-g.ru','Artplay и Интерио'],
+['Свет','Лампару','lampa.ru','ТК Василеостровский, секция 103'],
+['Свет','Ledmonster','ledmonster.ru','ТК Ланской, Студенческая, 10'],
+['Сантехника','Водотека','vodoteka.ru','ул. Салова, 57/1'],
+['Сантехника','Лавка сантехники','lavka-s.ru','Трибуца 7 / Славы 40 / Ленинский 64'],
+['Сантехника','Bathpoint','bathpoint.ru','Малый пр. В.О., 13'],
+['Двери','Profil Doors','профилдоорс.рф','Уманский пер., 62'],
+['Двери','Софья','sofiadoors.com','Московский пр., 148'],
+['Двери','Волховец','volhovec78.ru','Железноводская, 3'],
+['Двери','Фрамир','framyr.ru','Московский пр., 134'],
+['Полы','СиЛ-Паркет','seal-parket.ru','Ординарная, 10 / Народного Ополчения, 10'],
+['Полы','Цитадель паркет','citadelparket.ru','Каменноостровский, 56'],
+['Полы','Европаркет','euparket.ru','17-я линия В.О., 58'],
+['Текстиль','Ампир Декор','ampir.ru','Пушкинская, 19'],
+['Текстиль','Уют','ujut.com','наб. Фонтанки, 73'],
+['Камень','Карат','karatspb.ru','пр. Маршала Блюхера, 78Ф'],
+['Камень','Модера','moderadesign.ru','Полевая Сабировская, 54'],
+['Обои и краска','Manders','manders.ru','4 магазина: Гороховая 61 и др.'],
+['Обои и краска','Piterra','piterra.ru','5 магазинов и склад'],
+['Обои и краска','Demmoksi','demmoksi.ru','9 магазинов'],
+['Техника','Хаус Герайт','hausgerate.ru','Полевая Сабировская, 54'],
+['Техника','SMEG','smeg-store.ru','Лиговский пр., 13/15'],
+['Умный дом','Кловер Хоум','cloverhome.ru','Ропшинская, 24']];
+function sl(s){var d={'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'e','ж':'zh','з':'z','и':'i','й':'i','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'h','ц':'c','ч':'ch','ш':'sh','щ':'sch','ъ':'','ы':'i','ь':'','э':'e','ю':'yu','я':'ya'};return s.toLowerCase().split('').map(function(ch){return d[ch]!==undefined?d[ch]:ch}).join('').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
+var cats=['Все'];SUP.forEach(function(x){if(cats.indexOf(x[0])<0)cats.push(x[0])});
+$('#chips').innerHTML=cats.map(function(c,i){return '<button data-c="'+c+'" class="'+(i===0?'on':'')+'">'+c+'</button>'}).join('');
+function renderSup(cat){$('#supGrid').innerHTML=SUP.filter(function(x){return cat==='Все'||x[0]===cat}).map(function(x){return '<div class="pol"><div class="ph"><img src="images/partners/'+sl(x[1])+'.jpg" alt="'+x[1]+'" loading="lazy" onerror="this.style.display=\'none\'"><span class="cat">'+x[0]+'</span></div><b>'+x[1]+'</b><div class="det">'+(x[3]?x[3]+'<br>':'')+(x[2]?'<a href="https://'+x[2]+'" target="_blank" rel="noopener">'+x[2]+'</a>':'')+'</div></div>'}).join('');
+$$('.pol').forEach(function(p){p.addEventListener('click',function(e){if(e.target.closest('a'))return;p.classList.toggle('open')})})}
+renderSup('Все');
+$('#chips').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;$$('#chips button').forEach(function(x){x.classList.toggle('on',x===b)});renderSup(b.getAttribute('data-c'))});
+</script></body></html>
